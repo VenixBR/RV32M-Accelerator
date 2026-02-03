@@ -1,9 +1,10 @@
 ROOT       = $(CURDIR)
-RTL_DIR    = ${ROOT}/src/core
+RTL_DIR    = ${ROOT}/src
 TESTS_DIR  = ${ROOT}/tb
 GUI        ?= 0
 TB         ?= 1
 MUL        ?= 0
+GUI        ?= 0
 FLAGS += -access +rwc
 ifeq ($(GUI),1)
 	FLAGS += -gui
@@ -39,8 +40,7 @@ DataPath:
 
 Top:
 	cd ${ROOT}/Synthesis/work && \
-	if [ "$(TB)" = "0" ]; then \
-		xrun -v2001 -v93 -f ${RTL_DIR}/filelist_xcelium.flist $(FLAGS) -incdir ../../src/core/; \
+	
 	else \
 		xrun -v2001 -v93 -f ${TESTS_DIR}/tb_core_icarus/filelist.flist $(FLAGS) -incdir ../../src/core/; \
 	fi
@@ -51,6 +51,14 @@ Multiplier_icarus:
 	iverilog -g2012 -o testbench ${RTL_DIR}/new_multiplier.v ${TESTS_DIR}/new_multiplier_tb.sv && \
 	vvp testbench && \
 	gtkwave dump.vcd \
+
+Rotate_icarus:
+	cd ${ROOT}/Synthesis/work && \
+	iverilog -g2012 -o testbench ${RTL_DIR}/rotate_left.v ${TESTS_DIR}/rotate_tb.sv && \
+	vvp testbench && \
+	if [ "$(GUI)" = "1" ]; then \
+		gtkwave dump.vcd; \
+	fi
 
 
 

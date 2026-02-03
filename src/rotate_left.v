@@ -4,13 +4,13 @@ module rotate_left (
     input wire [31:0] operand_i,
     input wire [1:0]  rol_amount_i,
 
-    input reg  [31:0] result_o
+    output reg  [31:0] result_o
 );
 
-    wire [7:0] po_1_s;
-    wire [7:0] po_2_s;
-    wire [7:0] po_3_s;
-    wire [7:0] po_4_s;
+    reg [7:0] po_1_s;
+    reg [7:0] po_2_s;
+    reg [7:0] po_3_s;
+    reg [7:0] po_4_s;
 
     always@* begin
         po_1_s = operand_i[7:0];
