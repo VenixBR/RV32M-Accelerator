@@ -1,0 +1,8 @@
+Synthesis/work/*
+!Synthesis/work/.gitkeep
+
+Synthesis/reports/*
+!Synthesis/reports/.gitkeep
+
+Synthesis/deliverables/*
+!Synthesis/deliverables/.gitkeep
