@@ -144,6 +144,7 @@ module multiplier (
     reg  [31:0] reg_A_s;
     reg  [31:0] reg_B_s;
     wire [31:0] mux_B_s;
+    wire [31:0] rotated_mux_B_s;
 
     always @(posedge clk_i, posedge rst_i) begin
         if (rst_i) begin
@@ -155,13 +156,17 @@ module multiplier (
                 reg_A_s <= op_A_i;
             
             if (reg_B_en_s)
-                reg_B_s <= mux_B_s;
+                reg_B_s <= rotated_mux_B_s;
         end
     end
 
-    // ROTATE
+    assign mux_B_s = (mux_B_sel_s == 1'b0) ? op_B_i : reg_B_s;
 
-    assign mux_B_s = (mux_B_sel_s == 1'b0) ? op_B_i : B_rol_s;
+    rotate_left Rotate_inst (
+        .operand_i    ( mux_B_s         ),
+        .rol_amount_i ( rol_amount_s    ),
+        .result_o     ( rotated_mux_B_s )
+    );
 
 
 
