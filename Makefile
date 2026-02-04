@@ -52,14 +52,13 @@ Multiplier_icarus:
 	vvp testbench && \
 	gtkwave dump.vcd \
 
-Rotate_icarus:
+Multiplier_CP_icarus:
 	cd ${ROOT}/Synthesis/work && \
-	iverilog -g2012 -o testbench ${RTL_DIR}/rotate_left.v ${TESTS_DIR}/rotate_tb.sv && \
+	iverilog -g2012 -o testbench ${RTL_DIR}/multiplier_CP.v ${TESTS_DIR}/multiplier_CP_tb.sv && \
 	vvp testbench && \
 	if [ "$(GUI)" = "1" ]; then \
 		gtkwave dump.vcd; \
 	fi
-
 
 
 
