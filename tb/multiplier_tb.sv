@@ -1,10 +1,10 @@
 module multiplier_tb;
 
     localparam CLK_PERIOD = 10;
-    localparam STAGES = 4;
+    localparam STAGES = 6;
 
     logic clk, rst, sigA, sigB, upper, done, mult_on;
-    logic A_op, B_op, answer;
+    logic [31:0] A_op, B_op, answer;
     logic [6:0] opcode, funct7;
     logic [2:0] funct3;
 
@@ -63,7 +63,7 @@ module multiplier_tb;
         #(3*CLK_PERIOD/2)
         rst = 0;
 
-        #(5*CLK_PERIOD)
+        #(STAGES*CLK_PERIOD)
 
         $display("\n+-------------+------------+------------+");
         $display(  "| Instruction |  Expected  |   Answer   |");

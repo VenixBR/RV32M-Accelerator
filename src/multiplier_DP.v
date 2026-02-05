@@ -12,6 +12,7 @@ module multiplier_DP (
     input wire       reg_B_en_i,      // enable of register of operand B
     input wire       AC_en_i,         // enable of result accumulator
     input wire       mux_B_sel_i,     // mux selector of operand B
+    input wire       signed_A_i,      // signal extension of operand A
     input wire [3:0] sig_ctrl_B_i,    // signal extension of operand B
     input wire [2:0] shift_0_i,       // shift amount to multiplier 0
     input wire [2:0] shift_1_i,       // shift amount to multiplier 1
@@ -97,7 +98,7 @@ module multiplier_DP (
     assign A0_ext_s = {8'b00000000 ,reg_A_s[7:0]};
     assign A1_ext_s = {8'b00000000 ,reg_A_s[15:8]};
     assign A2_ext_s = {8'b00000000 ,reg_A_s[23:16]};
-    assign A3_ext_s = (signed_A_i==1'b1) ? {{{8{reg_A_s[7:0][31]}}}, reg_A_s[31:24]} : {8'b00000000 ,reg_A_s[31:24]};
+    assign A3_ext_s = (signed_A_i==1'b1) ? {{{8{reg_A_s[31]}}}, reg_A_s[31:24]} : {8'b00000000 ,reg_A_s[31:24]};
 
     // Signal extension to reg B value. Are variable because B is rotated.
     assign B0_ext_s = (sig_ctrl_B_i[0]==1'b1) ? {{{8{B0_s[7]}}}, B0_s} : {8'b00000000 ,B0_s};
@@ -114,47 +115,47 @@ module multiplier_DP (
     // PIPELINE STAGE HERE ( FOUR 16 BITS REGISTERS : 64 BITS )
 
     // Signal extension of A x B to 64 bits
-    assign A0_x_B0_ext_s = {48{A0_x_B0_s[15]}, A0_x_B0_s};
-    assign A1_x_B1_ext_s = {48{A1_x_B1_s[15]}, A1_x_B1_s};
-    assign A2_x_B2_ext_s = {48{A2_x_B2_s[15]}, A2_x_B2_s};
-    assign A3_x_B3_ext_s = {48{A3_x_B3_s[15]}, A3_x_B3_s};
+    assign A0_x_B0_ext_s = {{48{A0_x_B0_s[15]}}, A0_x_B0_s};
+    assign A1_x_B1_ext_s = {{48{A1_x_B1_s[15]}}, A1_x_B1_s};
+    assign A2_x_B2_ext_s = {{48{A2_x_B2_s[15]}}, A2_x_B2_s};
+    assign A3_x_B3_ext_s = {{48{A3_x_B3_s[15]}}, A3_x_B3_s};
 
     // SHIFTERS
     always@* begin
         // shifter to A0 x B0
         case (shift_0_i)
-            3'b000  : begin A0_x_B0_sft_s = A0_x_B0_ext_s end;       // 0*8
-            3'b011  : begin A0_x_B0_sft_s = A0_x_B0_ext_s << 24 end; // 3*8
-            3'b010  : begin A0_x_B0_sft_s = A0_x_B0_ext_s << 16 end; // 2*8
-            3'b001  : begin A0_x_B0_sft_s = A0_x_B0_ext_s << 8 end;  // 1*8
-            default : begin A0_x_B0_sft_s = A0_x_B0_ext_s end;
+            3'b000  : begin A0_x_B0_sft_s = A0_x_B0_ext_s;       end       // 0*8
+            3'b011  : begin A0_x_B0_sft_s = A0_x_B0_ext_s << 24; end // 3*8
+            3'b010  : begin A0_x_B0_sft_s = A0_x_B0_ext_s << 16; end // 2*8
+            3'b001  : begin A0_x_B0_sft_s = A0_x_B0_ext_s << 8;  end  // 1*8
+            default : begin A0_x_B0_sft_s = A0_x_B0_ext_s;       end
         endcase
 
         // shifter to A1 x B1
         case (shift_1_i)
-            3'b010  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 16 end; // 2*8
-            3'b001  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 8  end; // 1*8
-            3'b100  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 32 end; // 4*8
-            3'b011  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 24 end; // 3*8
-            default : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 16 end;
+            3'b010  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 16; end // 2*8
+            3'b001  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 8;  end // 1*8
+            3'b100  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 32; end // 4*8
+            3'b011  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 24; end // 3*8
+            default : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 16; end
         endcase
 
         // shifter to A2 x B2
         case (shift_2_i)
-            3'b100  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 32 end; // 4*8
-            3'b011  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 24 end; // 3*8
-            3'b010  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 16 end; // 2*8
-            3'b101  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 40 end; // 5*8
-            default : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 32 end;
+            3'b100  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 32; end // 4*8
+            3'b011  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 24; end // 3*8
+            3'b010  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 16; end // 2*8
+            3'b101  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 40; end // 5*8
+            default : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 32; end
         endcase
 
         // shifter to A3 x B3
         case (shift_3_i)
-            3'b110  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 48 end; // 6*8
-            3'b101  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 40 end; // 5*8
-            3'b100  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 32 end; // 4*8
-            3'b011  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 24 end; // 3*8
-            default : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 48 end;
+            3'b110  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 48; end // 6*8
+            3'b101  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 40; end // 5*8
+            3'b100  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 32; end // 4*8
+            3'b011  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 24; end // 3*8
+            default : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 48; end
         endcase
     end
 
@@ -166,7 +167,7 @@ module multiplier_DP (
         if (rst_i) begin
             AC_s <= 64'h0000000000000000;
         end
-        else (AC_en_i) begin
+        else if (AC_en_i) begin
             AC_s <= AC_s + partial_result_s;
         end
     end

@@ -20,7 +20,7 @@ module multiplier_top (
     wire       reg_B_en_s;
     wire       AC_en_s;
     wire       mux_B_sel_s;
-    wire [3:0] sig_ctrl_B_s,;
+    wire [3:0] sig_ctrl_B_s;
     wire [2:0] shift_0_s;
     wire [2:0] shift_1_s;
     wire [2:0] shift_2_s;
@@ -53,6 +53,7 @@ module multiplier_top (
         // Inputs
         .clk_i        ( clk_i        ),
         .rst_i        ( rst_i        ),
+        .signed_A_i   ( signed_A_i   ),
         .upper_i      ( upper_i      ),
         .op_A_i       ( op_A_i       ),
         .op_B_i       ( op_B_i       ),

@@ -10,40 +10,23 @@ ifeq ($(GUI),1)
 	FLAGS += -gui
 endif
 
+Decoder:
+	cd ${ROOT}/Synthesis/work && \
+	if [ "$(TB)" = "0" ]; then \
+		xrun -v2001 ${RTL_DIR}/decoder.v $(FLAGS); \
+	else \
+		xrun -v2001 ${RTL_DIR}/decoder.v ${TESTS_DIR}/decoder_tb.sv $(FLAGS); \
+	fi
+
 Multiplier:
 	cd ${ROOT}/Synthesis/work && \
 	if [ "$(TB)" = "0" ]; then \
 		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v $(FLAGS); \
 	else \
-		xrun -v2001 ${RTL_DIR}/new_multiplier.v ${TESTS_DIR}/new_multiplier_tb.sv $(FLAGS) +define+CLA4x4; \
+		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v ${RTL_DIR}/decoder.v ${TESTS_DIR}/multiplier_tb.sv $(FLAGS); \
 	fi
 
-Divisor:
-	cd ${ROOT}/Synthesis_div/work && \
-	if [ "$(TB)" = "0" ]; then \
-		xrun -v2001 ${RTL_DIR}/biriscv_divider.v $(FLAGS); \
-	else \
-		xrun -v2001 ${RTL_DIR}/biriscv_divider.v ${TESTS_DIR}/new_multiplier_tb.sv $(FLAGS) +define+CLA4x4; \
-	fi
 
-ControlPath:
-	cd ${ROOT}/Work && \
-	if [ "$(TB)" = "0" ]; then \
-		xrun -v2001  ${RTL_DIR}/ControlPath.v $(FLAGS) ; \
-	else \
-		xrun -v2001 ${RTL_DIR}/Described_HDLs/ControlPath.v ${TESTS_DIR}/ControlPath_tb.sv $(FLAGS); \
-	fi
-
-DataPath:
-	cd ${ROOT}/Work && \
-	xrun -v2001 ${RTL_DIR}/Comparator.v ${RTL_DIR}/DataPath.v $(FLAGS); \
-
-Top:
-	cd ${ROOT}/Synthesis/work && \
-	
-	else \
-		xrun -v2001 -v93 -f ${TESTS_DIR}/tb_core_icarus/filelist.flist $(FLAGS) -incdir ../../src/core/; \
-	fi
 
 
 Multiplier_icarus:

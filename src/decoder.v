@@ -13,8 +13,8 @@ module decoder (
     output reg upper_rem_o
 );
 
-    localparam opcode_M      = 7'0110011;
-    localparam funct7_M      = 7'0000001;
+    localparam opcode_M      = 7'b0110011;
+    localparam funct7_M      = 7'b0000001;
     localparam funct3_MUL    = 3'b000;
     localparam funct3_MULH   = 3'b001;
     localparam funct3_MULHSU = 3'b010;
@@ -25,7 +25,7 @@ module decoder (
     localparam funct3_REMU   = 3'b111;
 
 
-    wire active_accelerator_s;
+    reg active_accelerator_s;
 
     
     always@* begin
@@ -55,44 +55,44 @@ module decoder (
 
 
         // Set the signals to control the operations
-        case (funct3_s)
-            MUL : begin
+        case (funct3_i)
+            funct3_MUL : begin
                 signed_A_o  = 1'b0;
                 signed_B_o  = 1'b0;
                 upper_rem_o = 1'b0;
             end
-            MULH : begin
+            funct3_MULH : begin
                 signed_A_o  = 1'b1;
                 signed_B_o  = 1'b1;
                 upper_rem_o = 1'b1;
             end
-            MULHU : begin
+            funct3_MULHU : begin
                 signed_A_o  = 1'b0;
                 signed_B_o  = 1'b0;
                 upper_rem_o = 1'b1;
             end
-            MULHSU : begin
+            funct3_MULHSU : begin
                 signed_A_o  = 1'b1;
                 signed_B_o  = 1'b0;
                 upper_rem_o = 1'b1;
             end
-            DIV : begin
+            funct3_DIV : begin
                 signed_A_o  = 1'b1;
                 signed_B_o  = 1'b1;
                 upper_rem_o = 1'b0;
             end
-            DIVU : begin
+            funct3_DIVU : begin
                 signed_A_o  = 1'b0;
                 signed_B_o  = 1'b0;
                 upper_rem_o = 1'b0;
             end
-            REM : begin
+            funct3_REM : begin
                 signed_A_o  = 1'b1;
                 signed_B_o  = 1'b1;
                 upper_rem_o = 1'b1;
             end
-            REMU : begin
-                signed_A_o  = 1'b;
+            funct3_REMU : begin
+                signed_A_o  = 1'b0;
                 signed_B_o  = 1'b0;
                 upper_rem_o = 1'b1;
             end
