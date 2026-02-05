@@ -3,6 +3,7 @@ module multiplier_DP (
     // Inputs
     input wire clk_i,
     input wire rst_i,
+    input wire upper_i,
     input wire [31:0] op_A_i,
     input wire [31:0] op_B_i,
 
@@ -49,6 +50,19 @@ module multiplier_DP (
     wire [15:0] A2_x_B2_s;            // Store A2 times current B2, after your left rotate
     wire [15:0] A3_x_B3_s;            // Store A3 times current B3, after your left rotate
 
+    wire [63:0] A0_x_B0_ext_s;        // Extends the signal of the A0 x B0 to 64 bits
+    wire [63:0] A1_x_B1_ext_s;        // Extends the signal of the A1 x B1 to 64 bits
+    wire [63:0] A2_x_B2_ext_s;        // Extends the signal of the A2 x B2 to 64 bits
+    wire [63:0] A3_x_B3_ext_s;        // Extends the signal of the A3 x B3 to 64 bits
+
+    reg  [63:0] A0_x_B0_sft_s;        // A0 x B0 shifted
+    reg  [63:0] A1_x_B1_sft_s;        // A1 x B1 shifted
+    reg  [63:0] A2_x_B2_sft_s;        // A2 x B2 shifted
+    reg  [63:0] A3_x_B3_sft_s;        // A3 x B3 shifted
+
+    wire [63:0] partial_result_s;     // Partial result of multiplicatio to accumulator input
+
+    reg  [63:0] AC_s;                 // Accumulator value
 
     
 
@@ -99,5 +113,65 @@ module multiplier_DP (
 
     // PIPELINE STAGE HERE ( FOUR 16 BITS REGISTERS : 64 BITS )
 
+    // Signal extension of A x B to 64 bits
+    assign A0_x_B0_ext_s = {48{A0_x_B0_s[15]}, A0_x_B0_s};
+    assign A1_x_B1_ext_s = {48{A1_x_B1_s[15]}, A1_x_B1_s};
+    assign A2_x_B2_ext_s = {48{A2_x_B2_s[15]}, A2_x_B2_s};
+    assign A3_x_B3_ext_s = {48{A3_x_B3_s[15]}, A3_x_B3_s};
+
+    // SHIFTERS
+    always@* begin
+        // shifter to A0 x B0
+        case (shift_0_i)
+            3'b000  : begin A0_x_B0_sft_s = A0_x_B0_ext_s end;       // 0*8
+            3'b011  : begin A0_x_B0_sft_s = A0_x_B0_ext_s << 24 end; // 3*8
+            3'b010  : begin A0_x_B0_sft_s = A0_x_B0_ext_s << 16 end; // 2*8
+            3'b001  : begin A0_x_B0_sft_s = A0_x_B0_ext_s << 8 end;  // 1*8
+            default : begin A0_x_B0_sft_s = A0_x_B0_ext_s end;
+        endcase
+
+        // shifter to A1 x B1
+        case (shift_1_i)
+            3'b010  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 16 end; // 2*8
+            3'b001  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 8  end; // 1*8
+            3'b100  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 32 end; // 4*8
+            3'b011  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 24 end; // 3*8
+            default : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 16 end;
+        endcase
+
+        // shifter to A2 x B2
+        case (shift_2_i)
+            3'b100  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 32 end; // 4*8
+            3'b011  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 24 end; // 3*8
+            3'b010  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 16 end; // 2*8
+            3'b101  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 40 end; // 5*8
+            default : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 32 end;
+        endcase
+
+        // shifter to A3 x B3
+        case (shift_3_i)
+            3'b110  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 48 end; // 6*8
+            3'b101  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 40 end; // 5*8
+            3'b100  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 32 end; // 4*8
+            3'b011  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 24 end; // 3*8
+            default : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 48 end;
+        endcase
+    end
+
+    // Adders tree (2 layers + AC adder)
+    assign partial_result_s = A0_x_B0_sft_s + A1_x_B1_sft_s + A2_x_B2_sft_s + A3_x_B3_sft_s;
+
+    // Accumulator
+    always@(posedge clk_i, posedge rst_i) begin
+        if (rst_i) begin
+            AC_s <= 64'h0000000000000000;
+        end
+        else (AC_en_i) begin
+            AC_s <= AC_s + partial_result_s;
+        end
+    end
+
+    // Result MUX
+    assign result_o = (upper_i==1'b1) ? AC_s[63:32] : AC_s[31:0];
 
 endmodule

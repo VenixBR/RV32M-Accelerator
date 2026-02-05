@@ -13,7 +13,7 @@ endif
 Multiplier:
 	cd ${ROOT}/Synthesis/work && \
 	if [ "$(TB)" = "0" ]; then \
-		xrun -v2001 ${RTL_DIR}/new_multiplier.v $(FLAGS); \
+		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v $(FLAGS); \
 	else \
 		xrun -v2001 ${RTL_DIR}/new_multiplier.v ${TESTS_DIR}/new_multiplier_tb.sv $(FLAGS) +define+CLA4x4; \
 	fi
@@ -48,7 +48,7 @@ Top:
 
 Multiplier_icarus:
 	cd ${ROOT}/Synthesis/work && \
-	iverilog -g2012 -o testbench ${RTL_DIR}/new_multiplier.v ${TESTS_DIR}/new_multiplier_tb.sv && \
+	iverilog -g2012 -o testbench ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v ${RTL_DIR}/decoder.v ${TESTS_DIR}/multiplier_tb.sv && \
 	vvp testbench && \
 	gtkwave dump.vcd \
 

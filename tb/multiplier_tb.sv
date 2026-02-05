@@ -1,21 +1,39 @@
-module new_multiplier_tb;
+module multiplier_tb;
 
     localparam CLK_PERIOD = 10;
     localparam STAGES = 4;
 
-    logic clk, rst, opcode_valid, hold;
-    logic [31:0] opcode, A_op, B_op, answer;
+    logic clk, rst, sigA, sigB, upper, done, mult_on;
+    logic A_op, B_op, answer;
+    logic [6:0] opcode, funct7;
+    logic [2:0] funct3;
 
-    biriscv_multiplier DUV (
-        .clk_i               ( clk          ),
-        .rst_i               ( rst          ),
-        .opcode_valid_i      ( opcode_valid ),
-        .opcode_opcode_i     ( opcode       ),
-        .opcode_ra_operand_i ( A_op         ),
-        .opcode_rb_operand_i ( B_op         ),
-        .hold_i              ( hold         ),
-        .writeback_value_o   ( answer       )
+    multiplier_top DUT (
+        .clk_i      ( clk     ),
+        .rst_i      ( rst     ),
+        .mult_en_i  ( mult_on ),
+        .op_A_i     ( A_op    ),
+        .op_B_i     ( B_op    ),
+        .signed_A_i ( sigA    ),
+        .signed_B_i ( sigB    ),
+        .upper_i    ( upper   ),
+        .result_o   ( answer  ),
+        .done_o     ( done    )
     );
+
+    decoder decoder (
+        .opcode_i    ( opcode  ),
+        .funct3_i    ( funct3  ),
+        .funct7_i    ( funct7  ),
+
+        .mult_on_o   ( mult_on ),
+        //.div_on_o    (  ),
+        .signed_A_o  ( sigA    ),
+        .signed_B_o  ( sigB    ),
+        .upper_rem_o ( upper   )
+    );
+
+
 
     always #CLK_PERIOD clk <= ~clk;
 
@@ -23,17 +41,19 @@ module new_multiplier_tb;
 
     initial begin
         $dumpfile("dump.vcd");
-        $dumpvars(0, DUV);
+        $dumpvars(0, DUT);
         clk = 0;
         rst = 0;
-        hold = 0;
-        opcode_valid = 1;
+
+        opcode = 7'b0110011; 
+        funct7 = 7'b0000001;
+
         A_op = 32'h80000001; // 2147483649 ou -2147483647
         B_op = 32'h80010002; // 65538 ou 65538
-
         // A_op = 32'h00000009; // 2147483649 ou -2147483647
         // B_op = 32'h00000007; // 65538 ou 65538
-        opcode = 32'b0000001_0101010101_000_01010_0110011; // MUL
+        
+        funct3 = 3'b000;    // MUL
         A_ext = {32'h00000000, A_op};
         B_ext = {32'h00000000, B_op};
         AxB = A_ext * B_ext;
@@ -43,10 +63,7 @@ module new_multiplier_tb;
         #(3*CLK_PERIOD/2)
         rst = 0;
 
-        
-        #((STAGES+1)*CLK_PERIOD)
-        hold = 1;
-        #((STAGES)*CLK_PERIOD)
+        #(5*CLK_PERIOD)
 
         $display("\n+-------------+------------+------------+");
         $display(  "| Instruction |  Expected  |   Answer   |");
@@ -55,37 +72,28 @@ module new_multiplier_tb;
         
 
         # CLK_PERIOD
-        opcode = 32'b0000001_0101010101_001_01010_0110011; // MULH
+        funct3 = 3'b001;    // MULH
         A_ext = {{32{A_op[31]}}, A_op};
         B_ext = {{32{B_op[31]}}, B_op};
         AxB = A_ext * B_ext;
-        hold=0;
-        #((STAGES+1)*CLK_PERIOD)
-        hold = 1;
         #((STAGES)*CLK_PERIOD)
 
         $display(  "| MULH        | 0x%h | 0x%h |", AxB[63:32] ,answer); //0x00010002
 
         # CLK_PERIOD
-        opcode = 32'b0000001_0101010101_010_01010_0110011; // MULHSU
+        funct3 = 3'b010;    // MULSU
         A_ext = {{32{A_op[31]}}, A_op};
         B_ext = {32'h00000000, B_op};
         AxB = A_ext * B_ext;
-        hold=0;
-        #((STAGES+1)*CLK_PERIOD)
-        hold = 1;
         #((STAGES)*CLK_PERIOD)
 
         $display(  "| MULHSU      | 0x%h | 0x%h |", AxB[63:32] ,answer); //0x00010002
 
         # CLK_PERIOD
-        opcode = 32'b0000001_0101010101_011_01010_0110011; // MULHU
+        funct3 = 3'b011;    // MULHU
         A_ext = {32'h00000000, A_op};
         B_ext = {32'h00000000, B_op};
         AxB = A_ext * B_ext;
-        hold=0;
-        #((STAGES+1)*CLK_PERIOD)
-        hold = 1;
         #((STAGES)*CLK_PERIOD)
 
         $display(  "| MULHU       | 0x%h | 0x%h |", AxB[63:32] ,answer); //0x00010002
