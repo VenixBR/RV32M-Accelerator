@@ -1,15 +1,29 @@
-#-----------------------------------------------------------------------------
-# README
-# - This file contains commands which can be shared among all design steps and tools.
-# - ...
-#-----------------------------------------------------------------------------
+set MAIN_CLOCK_NAME clk_i
+set MAIN_RST_NAME rst_i
+
+set period_clk [format "%.2f" [expr 1000.0 / $freq_mhz]] ;# (100 ns = 10 MHz) (10 ns = 100 MHz) (2 ns = 500 MHz) (1 ns = 1 GHz)
+set clk_uncertainty 0.05 ;# ns (“a guess”)
+set clk_latency 0.10 ;# ns (“a guess”)
+set in_delay 0.30 ;# ns
+set out_delay 0.30;#ns 
+set out_load 0.045 ;#pF 
+set slew "146 164 264 252" ;#minimum rise, minimum fall, maximum rise and maximum fall 
+set slew_min_rise 0.146 ;# ns
+set slew_min_fall 0.164 ;# ns
+set slew_max_rise 0.264 ;# ns
+set slew_max_fall 0.252 ;# ns
+
+
+
+
+
 
 
 #################################################################################
 ## DEFINE VARS
 #################################################################################
 set sdc_version 1.5
-current_design ${HDL_NAME}
+current_design ${DESIGN}
 
 #################################################################################
 ## IDEAL NETS
@@ -48,8 +62,3 @@ set_input_transition -fall -min $slew_min_fall [remove_from_collection [all_inpu
 
 set_input_transition -rise -max $slew_max_rise [remove_from_collection [all_inputs] "[get_ports ${MAIN_CLOCK_NAME}]"]
 set_input_transition -fall -max $slew_max_fall [remove_from_collection [all_inputs] "[get_ports ${MAIN_CLOCK_NAME}]"]
-
-
-
-
-

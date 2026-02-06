@@ -95,12 +95,9 @@ module multiplier_tb;
         rst = 1;
         #(3*CLK_PERIOD/2)
         rst = 0;
-
-        
-        # (3*CLK_PERIOD)
         
         
-        #(STAGES*CLK_PERIOD)
+        #((STAGES)*CLK_PERIOD)
 
         $display(  "| MULHSU      | 0x%h | 0x%h |", AxB[63:32] ,answer); //0x00010002
 
@@ -112,8 +109,8 @@ module multiplier_tb;
         rst = 1;
         #(3*CLK_PERIOD/2)
         rst = 0;
-
-        #100
+        #((STAGES)*CLK_PERIOD)
+        
         $display(  "| MULHU       | 0x%h | 0x%h |", AxB[63:32] ,answer); //0x00010002
         $display(  "+-------------+------------+------------+\n");
         $finish;

@@ -1,9 +1,9 @@
 module multiplier_DP ( 
     
     // Inputs
-    input wire clk_i,
-    input wire rst_i,
-    input wire upper_i,
+    input wire        clk_i,
+    input wire        rst_i,
+    input wire        upper_i,
     input wire [31:0] op_A_i,
     input wire [31:0] op_B_i,
 
@@ -11,13 +11,11 @@ module multiplier_DP (
     input wire       reg_A_en_i,      // enable of register of operand A
     input wire       reg_B_en_i,      // enable of register of operand B
     input wire       AC_en_i,         // enable of result accumulator
+    input wire       en_pipe_i,       // enable of pipeline registers
     input wire       mux_B_sel_i,     // mux selector of operand B
     input wire       signed_A_i,      // signal extension of operand A
-    input wire [3:0] sig_ctrl_B_i,    // signal extension of operand B
-    input wire [2:0] shift_0_i,       // shift amount to multiplier 0
-    input wire [2:0] shift_1_i,       // shift amount to multiplier 1
-    input wire [2:0] shift_2_i,       // shift amount to multiplier 2
-    input wire [2:0] shift_3_i,       // shift amount to multiplier 3
+    input wire       signed_B_i,      // signal extension of operand B
+    input wire [1:0] shift_amount_i,  // shift amount to multiplier results
     input wire       rol_en_i,        // left rotate amount to operand B
 
     // Outputs
@@ -29,9 +27,11 @@ module multiplier_DP (
     reg  [31:0] reg_B_s;              // Input register to operand B
     reg         reg_upper_s;          // Input register to signal upper_i
     reg         reg_sigA_s;           // Input register to signal signed_A_i
+    reg  [3:0]  reg_sigB_s;           // Input register to signal signed_B_i
 
     wire [31:0] mux_B_s;              // Output of mux to left rotate input
     wire [31:0] rotated_mux_B_s;      // Output of left rotate to register B input
+    wire [3:0]  mux_sigB_s;           // Output of mux to sigB reg
     
                                       // reg B value is divided in 4 parts: B3 B2 B1 B0
     wire [7:0] B0_s;                  // B0 <- regB [7:0]
@@ -54,6 +54,15 @@ module multiplier_DP (
     wire [15:0] A2_x_B2_s;            // Store A2 times current B2, after your left rotate
     wire [15:0] A3_x_B3_s;            // Store A3 times current B3, after your left rotate
 
+    reg  [15:0] reg_pipe_A0xB0_s;     // PIPELINE REGISTERS
+    reg  [15:0] reg_pipe_A1xB1_s;
+    reg  [15:0] reg_pipe_A2xB2_s;
+    reg  [15:0] reg_pipe_A3xB3_s;
+    reg  [1:0]  reg_pipe_sft_amt_s;
+    reg         reg_pipe_AC_en_s;
+    
+
+
     wire [63:0] A0_x_B0_ext_s;        // Extends the signal of the A0 x B0 to 64 bits
     wire [63:0] A1_x_B1_ext_s;        // Extends the signal of the A1 x B1 to 64 bits
     wire [63:0] A2_x_B2_ext_s;        // Extends the signal of the A2 x B2 to 64 bits
@@ -73,22 +82,26 @@ module multiplier_DP (
     // Input Registers
     always @(posedge clk_i, posedge rst_i) begin
         if (rst_i) begin
-            reg_A_s     <= 32'h00000000;
-            reg_B_s     <= 32'h00000000;
-            reg_upper_s <= 1'b0;
-            reg_sigA_s  <= 1'b0;
+            reg_A_s           <= 32'h00000000;
+            reg_B_s           <= 32'h00000000;
+            reg_upper_s       <= 1'b0;
+            reg_sigA_s        <= 1'b0;
         end
         else if (clk_i) begin
             if (reg_A_en_i) begin
-                reg_A_s     <= op_A_i;
-                reg_upper_s <= upper_i;
-                reg_sigA_s  <= signed_A_i;
+                reg_A_s           <= op_A_i;
+                reg_upper_s       <= upper_i;
+                reg_sigA_s        <= signed_A_i;
             end
             
-            if (reg_B_en_i)
-                reg_B_s <= rotated_mux_B_s;
+            if (reg_B_en_i) begin
+                reg_B_s           <= rotated_mux_B_s;
+                reg_sigB_s        <= mux_sigB_s; 
+            end
         end
     end
+
+    assign mux_sigB_s = (reg_A_en_i == 1'b1) ? {signed_B_i, 3'b000} : {reg_sigB_s[2:0], reg_sigB_s[3]};
 
     // Mux between B input and reg B value
     assign mux_B_s = (mux_B_sel_i == 1'b0) ? op_B_i : reg_B_s;
@@ -109,10 +122,10 @@ module multiplier_DP (
     assign A3_ext_s = (reg_sigA_s==1'b1) ? {{{8{reg_A_s[31]}}}, reg_A_s[31:24]} : {8'b00000000 ,reg_A_s[31:24]};
 
     // Signal extension to reg B value. Are variable because B is rotated.
-    assign B0_ext_s = (sig_ctrl_B_i[0]==1'b1) ? {{{8{B0_s[7]}}}, B0_s} : {8'b00000000 ,B0_s};
-    assign B1_ext_s = (sig_ctrl_B_i[1]==1'b1) ? {{{8{B1_s[7]}}}, B1_s} : {8'b00000000 ,B1_s};
-    assign B2_ext_s = (sig_ctrl_B_i[2]==1'b1) ? {{{8{B2_s[7]}}}, B2_s} : {8'b00000000 ,B2_s};
-    assign B3_ext_s = (sig_ctrl_B_i[3]==1'b1) ? {{{8{B3_s[7]}}}, B3_s} : {8'b00000000 ,B3_s};
+    assign B0_ext_s = (reg_sigB_s[0]==1'b1) ? {{{8{B0_s[7]}}}, B0_s} : {8'b00000000 ,B0_s};
+    assign B1_ext_s = (reg_sigB_s[1]==1'b1) ? {{{8{B1_s[7]}}}, B1_s} : {8'b00000000 ,B1_s};
+    assign B2_ext_s = (reg_sigB_s[2]==1'b1) ? {{{8{B2_s[7]}}}, B2_s} : {8'b00000000 ,B2_s};
+    assign B3_ext_s = (reg_sigB_s[3]==1'b1) ? {{{8{B3_s[7]}}}, B3_s} : {8'b00000000 ,B3_s};
 
     // Multiply the 4 tiny parts (16 bits) of original number.
     assign A0_x_B0_s = A0_ext_s * B0_ext_s;
@@ -120,50 +133,60 @@ module multiplier_DP (
     assign A2_x_B2_s = A2_ext_s * B2_ext_s;
     assign A3_x_B3_s = A3_ext_s * B3_ext_s;
 
-    // PIPELINE STAGE HERE ( FOUR 16 BITS REGISTERS : 64 BITS )
+
+    always@(posedge clk_i, posedge rst_i) begin
+        if (rst_i) begin
+            reg_pipe_A0xB0_s   <= 16'h0000;
+            reg_pipe_A1xB1_s   <= 16'h0000;
+            reg_pipe_A2xB2_s   <= 16'h0000;
+            reg_pipe_A3xB3_s   <= 16'h0000;
+            reg_pipe_AC_en_s   <= 1'b0;
+            reg_pipe_sft_amt_s <= 2'b00;
+        end
+        else if ( en_pipe_i ) begin
+            reg_pipe_A0xB0_s   <= A0_x_B0_s;
+            reg_pipe_A1xB1_s   <= A1_x_B1_s;
+            reg_pipe_A2xB2_s   <= A2_x_B2_s;
+            reg_pipe_A3xB3_s   <= A3_x_B3_s;
+            reg_pipe_AC_en_s   <= AC_en_i;
+            reg_pipe_sft_amt_s <= shift_amount_i;
+        end
+    end
+
 
     // Signal extension of A x B to 64 bits
-    assign A0_x_B0_ext_s = {{48{A0_x_B0_s[15]}}, A0_x_B0_s};
-    assign A1_x_B1_ext_s = {{48{A1_x_B1_s[15]}}, A1_x_B1_s};
-    assign A2_x_B2_ext_s = {{48{A2_x_B2_s[15]}}, A2_x_B2_s};
-    assign A3_x_B3_ext_s = {{48{A3_x_B3_s[15]}}, A3_x_B3_s};
+    assign A0_x_B0_ext_s = {{48{reg_pipe_A0xB0_s[15]}}, reg_pipe_A0xB0_s};
+    assign A1_x_B1_ext_s = {{48{reg_pipe_A1xB1_s[15]}}, reg_pipe_A1xB1_s};
+    assign A2_x_B2_ext_s = {{48{reg_pipe_A2xB2_s[15]}}, reg_pipe_A2xB2_s};
+    assign A3_x_B3_ext_s = {{48{reg_pipe_A3xB3_s[15]}}, reg_pipe_A3xB3_s};
 
     // SHIFTERS
     always@* begin
-        // shifter to A0 x B0
-        case (shift_0_i)
-            3'b000  : begin A0_x_B0_sft_s = A0_x_B0_ext_s;       end       // 0*8
-            3'b011  : begin A0_x_B0_sft_s = A0_x_B0_ext_s << 24; end // 3*8
-            3'b010  : begin A0_x_B0_sft_s = A0_x_B0_ext_s << 16; end // 2*8
-            3'b001  : begin A0_x_B0_sft_s = A0_x_B0_ext_s << 8;  end  // 1*8
-            default : begin A0_x_B0_sft_s = A0_x_B0_ext_s;       end
-        endcase
-
-        // shifter to A1 x B1
-        case (shift_1_i)
-            3'b010  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 16; end // 2*8
-            3'b001  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 8;  end // 1*8
-            3'b100  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 32; end // 4*8
-            3'b011  : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 24; end // 3*8
-            default : begin A1_x_B1_sft_s = A1_x_B1_ext_s << 16; end
-        endcase
-
-        // shifter to A2 x B2
-        case (shift_2_i)
-            3'b100  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 32; end // 4*8
-            3'b011  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 24; end // 3*8
-            3'b010  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 16; end // 2*8
-            3'b101  : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 40; end // 5*8
-            default : begin A2_x_B2_sft_s = A2_x_B2_ext_s << 32; end
-        endcase
-
-        // shifter to A3 x B3
-        case (shift_3_i)
-            3'b110  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 48; end // 6*8
-            3'b101  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 40; end // 5*8
-            3'b100  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 32; end // 4*8
-            3'b011  : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 24; end // 3*8
-            default : begin A3_x_B3_sft_s = A3_x_B3_ext_s << 48; end
+        case (reg_pipe_sft_amt_s)
+            2'b00 : begin
+                A0_x_B0_sft_s = A0_x_B0_ext_s;
+                A1_x_B1_sft_s = A1_x_B1_ext_s << 16;
+                A2_x_B2_sft_s = A2_x_B2_ext_s << 32;
+                A3_x_B3_sft_s = A3_x_B3_ext_s << 48;
+            end
+            2'b01 : begin
+                A0_x_B0_sft_s = A0_x_B0_ext_s << 24;
+                A1_x_B1_sft_s = A1_x_B1_ext_s << 8;
+                A2_x_B2_sft_s = A2_x_B2_ext_s << 24;
+                A3_x_B3_sft_s = A3_x_B3_ext_s << 40;
+            end
+            2'b11 : begin
+                A0_x_B0_sft_s = A0_x_B0_ext_s << 16;
+                A1_x_B1_sft_s = A1_x_B1_ext_s << 32;
+                A2_x_B2_sft_s = A2_x_B2_ext_s << 16;
+                A3_x_B3_sft_s = A3_x_B3_ext_s << 32;
+            end
+            2'b10 : begin
+                A0_x_B0_sft_s = A0_x_B0_ext_s << 8;
+                A1_x_B1_sft_s = A1_x_B1_ext_s << 24;
+                A2_x_B2_sft_s = A2_x_B2_ext_s << 40;
+                A3_x_B3_sft_s = A3_x_B3_ext_s << 24;
+            end
         endcase
     end
 
@@ -175,7 +198,7 @@ module multiplier_DP (
         if (rst_i) begin
             AC_s <= 64'h0000000000000000;
         end
-        else if (AC_en_i) begin
+        else if (reg_pipe_AC_en_s) begin
             AC_s <= AC_s + partial_result_s;
         end
     end
