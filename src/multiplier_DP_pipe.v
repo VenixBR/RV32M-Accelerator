@@ -54,6 +54,11 @@ module multiplier_DP (
     wire [15:0] A2_x_B2_s;            // Store A2 times current B2, after your left rotate
     wire [15:0] A3_x_B3_s;            // Store A3 times current B3, after your left rotate
 
+    reg  [15:0] reg_pipe_0_s;         // Register to pipeline 0
+    reg  [15:0] reg_pipe_1_s;         // Register to pipeline 1
+    reg  [15:0] reg_pipe_2_s;         // Register to pipeline 2
+    reg  [15:0] reg_pipe_3_s;         // Register to pipeline 3 
+
     wire [63:0] A0_x_B0_ext_s;        // Extends the signal of the A0 x B0 to 64 bits
     wire [63:0] A1_x_B1_ext_s;        // Extends the signal of the A1 x B1 to 64 bits
     wire [63:0] A2_x_B2_ext_s;        // Extends the signal of the A2 x B2 to 64 bits
@@ -120,13 +125,30 @@ module multiplier_DP (
     assign A2_x_B2_s = A2_ext_s * B2_ext_s;
     assign A3_x_B3_s = A3_ext_s * B3_ext_s;
 
+
+    always@(posedge clk_i, posedge rst_i) begin
+        if (rst_i) begin
+            reg_pipe_0_s <= 16'h0000;
+            reg_pipe_1_s <= 16'h0000;
+            reg_pipe_2_s <= 16'h0000;
+            reg_pipe_3_s <= 16'h0000;
+        end
+        else begin 
+            reg_pipe_0_s <= A0_x_B0_s;
+            reg_pipe_1_s <= A1_x_B1_s;
+            reg_pipe_2_s <= A2_x_B2_s;
+            reg_pipe_3_s <= A3_x_B3_s;
+        end
+    end
+
+
     // PIPELINE STAGE HERE ( FOUR 16 BITS REGISTERS : 64 BITS )
 
     // Signal extension of A x B to 64 bits
-    assign A0_x_B0_ext_s = {{48{A0_x_B0_s[15]}}, A0_x_B0_s};
-    assign A1_x_B1_ext_s = {{48{A1_x_B1_s[15]}}, A1_x_B1_s};
-    assign A2_x_B2_ext_s = {{48{A2_x_B2_s[15]}}, A2_x_B2_s};
-    assign A3_x_B3_ext_s = {{48{A3_x_B3_s[15]}}, A3_x_B3_s};
+    assign A0_x_B0_ext_s = {{48{reg_pipe_0_s[15]}}, reg_pipe_0_s};
+    assign A1_x_B1_ext_s = {{48{reg_pipe_1_s[15]}}, reg_pipe_1_s};
+    assign A2_x_B2_ext_s = {{48{reg_pipe_2_s[15]}}, reg_pipe_2_s};
+    assign A3_x_B3_ext_s = {{48{reg_pipe_3_s[15]}}, reg_pipe_3_s};
 
     // SHIFTERS
     always@* begin

@@ -57,8 +57,8 @@ module decoder (
         // Set the signals to control the operations
         case (funct3_i)
             funct3_MUL : begin
-                signed_A_o  = 1'b0;
-                signed_B_o  = 1'b0;
+                signed_A_o  = 1'b1;
+                signed_B_o  = 1'b1;
                 upper_rem_o = 1'b0;
             end
             funct3_MULH : begin

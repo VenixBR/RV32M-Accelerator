@@ -35,7 +35,7 @@ module multiplier_tb;
 
 
 
-    always #CLK_PERIOD clk <= ~clk;
+    always #(CLK_PERIOD/2) clk <= ~clk;
 
     reg [63:0] A_ext, B_ext, AxB;
 
@@ -54,8 +54,8 @@ module multiplier_tb;
         // B_op = 32'h00000007; // 65538 ou 65538
         
         funct3 = 3'b000;    // MUL
-        A_ext = {32'h00000000, A_op};
-        B_ext = {32'h00000000, B_op};
+        A_ext = {{32{A_op[31]}}, A_op};
+        B_ext = {{32{B_op[31]}}, B_op};
         AxB = A_ext * B_ext;
 
         #(CLK_PERIOD/2)
@@ -70,22 +70,37 @@ module multiplier_tb;
         $display(  "+-------------+------------+------------+");
         $display(  "| MUL         | 0x%h | 0x%h |", AxB[31:0] ,answer); //0x00010002
         
-
-        # CLK_PERIOD
+        
+        #(CLK_PERIOD/2)
+        rst = 1;
         funct3 = 3'b001;    // MULH
         A_ext = {{32{A_op[31]}}, A_op};
         B_ext = {{32{B_op[31]}}, B_op};
         AxB = A_ext * B_ext;
-        #((STAGES)*CLK_PERIOD)
-
-        $display(  "| MULH        | 0x%h | 0x%h |", AxB[63:32] ,answer); //0x00010002
+        #(3*CLK_PERIOD/2)
+        rst = 0;
 
         # CLK_PERIOD
-        funct3 = 3'b010;    // MULSU
+        
+        #(STAGES*CLK_PERIOD)
+
+         $display(  "| MULH        | 0x%h | 0x%h |", AxB[63:32] ,answer); //0x00010002
+
+
+        #(CLK_PERIOD/2)
+        funct3 = 3'b010;    // MULHSU
         A_ext = {{32{A_op[31]}}, A_op};
         B_ext = {32'h00000000, B_op};
         AxB = A_ext * B_ext;
-        #((STAGES)*CLK_PERIOD)
+        rst = 1;
+        #(3*CLK_PERIOD/2)
+        rst = 0;
+
+        
+        # (3*CLK_PERIOD)
+        
+        
+        #(STAGES*CLK_PERIOD)
 
         $display(  "| MULHSU      | 0x%h | 0x%h |", AxB[63:32] ,answer); //0x00010002
 
@@ -94,8 +109,11 @@ module multiplier_tb;
         A_ext = {32'h00000000, A_op};
         B_ext = {32'h00000000, B_op};
         AxB = A_ext * B_ext;
-        #((STAGES)*CLK_PERIOD)
+        rst = 1;
+        #(3*CLK_PERIOD/2)
+        rst = 0;
 
+        #100
         $display(  "| MULHU       | 0x%h | 0x%h |", AxB[63:32] ,answer); //0x00010002
         $display(  "+-------------+------------+------------+\n");
         $finish;

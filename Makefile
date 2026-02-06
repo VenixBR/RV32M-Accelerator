@@ -10,7 +10,7 @@ ifeq ($(GUI),1)
 	FLAGS += -gui
 endif
 
-Decoder:
+Decoder_xcelium:
 	cd ${ROOT}/Synthesis/work && \
 	if [ "$(TB)" = "0" ]; then \
 		xrun -v2001 ${RTL_DIR}/decoder.v $(FLAGS); \
@@ -18,7 +18,7 @@ Decoder:
 		xrun -v2001 ${RTL_DIR}/decoder.v ${TESTS_DIR}/decoder_tb.sv $(FLAGS); \
 	fi
 
-Multiplier:
+Multiplier_xcelium:
 	cd ${ROOT}/Synthesis/work && \
 	if [ "$(TB)" = "0" ]; then \
 		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v $(FLAGS); \
@@ -28,12 +28,29 @@ Multiplier:
 
 
 
+Decoder_icarus:
+	cd ${ROOT}/Synthesis/work && \
+	iverilog -g2012 -o testbench ${RTL_DIR}/decoder.v ${TESTS_DIR}/decoder_tb.sv && \
+	vvp testbench && \
+	if [ "$(GUI)" = "1" ]; then \
+		gtkwave dump.vcd; \
+	fi
 
 Multiplier_icarus:
 	cd ${ROOT}/Synthesis/work && \
 	iverilog -g2012 -o testbench ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v ${RTL_DIR}/decoder.v ${TESTS_DIR}/multiplier_tb.sv && \
 	vvp testbench && \
-	gtkwave dump.vcd \
+	if [ "$(GUI)" = "1" ]; then \
+		gtkwave dump.vcd  --rcvar 'fontname_signals Monospace 12' --rcvar 'fontname_waves Monospace 12'; \
+	fi
+
+Multiplier_pipe_icarus:
+	cd ${ROOT}/Synthesis/work && \
+	iverilog -g2012 -o testbench ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/multiplier_DP_pipe.v ${RTL_DIR}/multiplier_top.v ${RTL_DIR}/decoder.v ${TESTS_DIR}/multiplier_tb.sv && \
+	vvp testbench && \
+	if [ "$(GUI)" = "1" ]; then \
+		gtkwave dump.vcd  --rcvar 'fontname_signals Monospace 12' --rcvar 'fontname_waves Monospace 12'; \
+	fi
 
 Multiplier_CP_icarus:
 	cd ${ROOT}/Synthesis/work && \
