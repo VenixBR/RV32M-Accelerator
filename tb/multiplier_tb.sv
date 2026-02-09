@@ -1,7 +1,7 @@
 module multiplier_tb;
 
     localparam CLK_PERIOD = 10;
-    localparam STAGES = 6;
+    localparam STAGES = 7;
 
     logic clk, rst, sigA, sigB, upper, done, mult_on;
     logic [31:0] A_op, B_op, answer;

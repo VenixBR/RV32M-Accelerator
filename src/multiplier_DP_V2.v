@@ -1,4 +1,4 @@
-module multiplier_DP ( 
+module multiplier_DP_V2 ( 
     
     // Inputs
     input wire        clk_i,
@@ -74,6 +74,8 @@ module multiplier_DP (
     reg  [63:0] A3_x_B3_sft_s;        // A3 x B3 shifted
 
     wire [63:0] partial_result_s;     // Partial result of multiplicatio to accumulator input
+
+    reg  [63:0] reg_pipe_result_s;
 
     reg  [63:0] AC_s;                 // Accumulator value
 
@@ -193,13 +195,22 @@ module multiplier_DP (
     // Adders tree (2 layers + AC adder)
     assign partial_result_s = A0_x_B0_sft_s + A1_x_B1_sft_s + A2_x_B2_sft_s + A3_x_B3_sft_s;
 
+
+    always@(posedge clk_i, posedge rst_i) begin
+        if (rst_i) 
+            reg_pipe_result_s <= 64'h0000000000000000;
+        else if (en_pipe_i)
+            reg_pipe_result_s <= partial_result_s;
+    end
+
+
     // Accumulator
     always@(posedge clk_i, posedge rst_i) begin
         if (rst_i) begin
             AC_s <= 64'h0000000000000000;
         end
         else if (reg_pipe_AC_en_s) begin
-            AC_s <= AC_s + partial_result_s;
+            AC_s <= AC_s + reg_pipe_result_s;
         end
     end
 

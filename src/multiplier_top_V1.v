@@ -1,4 +1,18 @@
-module multiplier_top (
+/*
+Without pipeline stages
+CRITICAL PATH : 3 layers adder tree
+
+PDK      : Cadence 45nm
+MAX FREQ : 315 MHz
+CYCLES   : 7
+POWER    : 2381,01 uW
+ENERGY   : 52,83 pJ 
+AREA     : 12600,49 um2
+*/
+
+
+
+module multiplier_top_v1 (
 
     // Inputs
     input wire clk_i,
@@ -25,7 +39,7 @@ module multiplier_top (
     wire       rol_en_s;
 
     // CONTROL PATH
-    multiplier_CP MULT_CP_inst(
+    multiplier_CP_V1 MULT_CP_inst(
         // INPUTS
         .clk_i          ( clk_i          ),
         .rst_i          ( rst_i          ),
@@ -42,7 +56,7 @@ module multiplier_top (
         .done_o         ( done_o         )
     );
 
-    multiplier_DP MULT_DP_inst ( 
+    multiplier_DP_V1 MULT_DP_inst ( 
         // Inputs
         .clk_i          ( clk_i          ),
         .rst_i          ( rst_i          ),

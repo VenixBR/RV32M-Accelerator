@@ -1,5 +1,5 @@
 export ROOT       = $(CURDIR)
-export DESIGN_    = multiplier_top_pipe
+export DESIGN_    = multiplier_top
 export FREQ_MHZ   ?= 200
 export OP_CORNER  ?= slow
        RTL_DIR    = ${ROOT}/src
