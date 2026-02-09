@@ -1,19 +1,19 @@
 /*
-Without pipeline stages
+Without pipeline stages with low-upper mux
 CRITICAL PATH : 3 layers adder tree
 
 PDK      : Cadence 45nm
-MAX FREQ : 315 MHz
+MAX FREQ : 290 MHz
 CYCLES   : 7
-TIME     : 22,19 ns
-POWER    : 2381,01 uW
-ENERGY   : 52,83 pJ 
-AREA     : 12600,49 um2
+TIME     : 24,15 ns
+POWER    : 1784,83 uW
+ENERGY   : 43,10 pJ 
+AREA     : 11360,667 um2
 */
 
 
 
-module multiplier_top_V1 (
+module multiplier_top_V3 (
 
     // Inputs
     input wire clk_i,
@@ -40,7 +40,7 @@ module multiplier_top_V1 (
     wire       rol_en_s;
 
     // CONTROL PATH
-    multiplier_CP_V1 MULT_CP_inst(
+    multiplier_CP_V3 MULT_CP_inst(
         // INPUTS
         .clk_i          ( clk_i          ),
         .rst_i          ( rst_i          ),
@@ -57,7 +57,7 @@ module multiplier_top_V1 (
         .done_o         ( done_o         )
     );
 
-    multiplier_DP_V1 MULT_DP_inst ( 
+    multiplier_DP_V3 MULT_DP_inst ( 
         // Inputs
         .clk_i          ( clk_i          ),
         .rst_i          ( rst_i          ),

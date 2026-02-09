@@ -5,6 +5,7 @@ CRITICAL PATH : 16 bits multiplier
 PDK      : Cadence 45nm
 MAX FREQ : 335 MHz
 CYCLES   : 8
+TIME     : 23,92 ns
 POWER    : 2625,03 uW
 ENERGY   : 62,79 pJ 
 AREA     : 14700,074 um2

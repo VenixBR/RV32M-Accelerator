@@ -1,4 +1,4 @@
-module multiplier_CP_V2 (
+module multiplier_CP_V3 (
     // INPUTS
     input wire clk_i,
     input wire rst_i,
@@ -21,9 +21,8 @@ module multiplier_CP_V2 (
     localparam MULT_2 = 3'b011;
     localparam MULT_3 = 3'b010;
     localparam MULT_4 = 3'b110;
-    localparam WAIT_1 = 3'b100;
-    localparam WAIT_2 = 3'b101;
-    localparam DONE   = 3'b111;
+    localparam WAIT   = 3'b100;
+    localparam DONE   = 3'b101;
 
     // SIGNALS 
     reg [2:0] Current_State_s;
@@ -37,10 +36,10 @@ module multiplier_CP_V2 (
             MULT_1  : begin Next_State_s = MULT_2; end
             MULT_2  : begin Next_State_s = MULT_3; end
             MULT_3  : begin Next_State_s = MULT_4; end
-            MULT_4  : begin Next_State_s = WAIT_1; end
-            WAIT_1  : begin Next_State_s = WAIT_2; end
-            WAIT_2  : begin Next_State_s = DONE;   end
+            MULT_4  : begin Next_State_s = WAIT;   end
+            WAIT    : begin Next_State_s = DONE;   end
             DONE    : begin Next_State_s = DONE;   end
+            default : begin Next_State_s = INIT;   end
         endcase
     end
 
@@ -108,17 +107,7 @@ module multiplier_CP_V2 (
                 rol_en_o       = 1'b1;
                 done_o         = 1'b0;
             end
-            WAIT_1 : begin
-                reg_A_en_o     = 1'b0;
-                reg_B_en_o     = 1'b0;
-                AC_en_o        = 1'b1;
-                en_pipe_o      = 1'b1;
-                mux_B_sel_o    = 1'b0;
-                shift_amount_o = 2'b00;
-                rol_en_o       = 1'b0;
-                done_o         = 1'b0;
-            end
-            WAIT_2 : begin
+            WAIT : begin
                 reg_A_en_o     = 1'b0;
                 reg_B_en_o     = 1'b0;
                 AC_en_o        = 1'b0;
@@ -138,16 +127,16 @@ module multiplier_CP_V2 (
                 rol_en_o       = 1'b0;
                 done_o         = 1'b1;
             end
-            // default : begin
-            //     reg_A_en_o     = 1'b0;
-            //     reg_B_en_o     = 1'b0;
-            //     AC_en_o        = 1'b0;
-            //     en_pipe_o      = 1'b0;
-            //     mux_B_sel_o    = 1'b0;
-            //     shift_amount_o = 2'b00;
-            //     rol_en_o       = 1'b0;
-            //     done_o         = 1'b0;
-            // end
+            default : begin
+                reg_A_en_o     = 1'b0;
+                reg_B_en_o     = 1'b0;
+                AC_en_o        = 1'b0;
+                en_pipe_o      = 1'b0;
+                mux_B_sel_o    = 1'b0;
+                shift_amount_o = 2'b00;
+                rol_en_o       = 1'b0;
+                done_o         = 1'b0;
+            end
         endcase
     end
 

@@ -1,4 +1,4 @@
-module multiplier_DP_V2 ( 
+module multiplier_DP_V3 ( 
     
     // Inputs
     input wire        clk_i,
@@ -73,13 +73,23 @@ module multiplier_DP_V2 (
     reg  [63:0] A2_x_B2_sft_s;        // A2 x B2 shifted
     reg  [63:0] A3_x_B3_sft_s;        // A3 x B3 shifted
 
-    wire [63:0] partial_result_1_s;   // Partial result of multiplicatio to accumulator input
-    wire [63:0] partial_result_2_s;   // Partial result of multiplicatio to accumulator input
-    wire [63:0] partial_result_3_s;   // Partial result of multiplicatio to accumulator input
+    wire [31:0] M0_mux_s;
+    wire [31:0] M1_mux_s;
+    wire [31:0] M2_mux_s;
+    wire [31:0] M3_mux_s;
 
-    reg  [63:0] reg_pipe_result_s;
+    wire [33:0] low_mul_res_1_s;  
+    wire [33:0] low_mul_res_2_s;  
+    wire [33:0] low_mul_res_3_s;  
+    wire [1:0]  low_mul_co_s;
 
-    reg  [63:0] AC_s;                 // Accumulator value
+
+    wire [31:0] partial_result_1_s;     // Partial result of multiplicatio to accumulator input
+    wire [31:0] partial_result_2_s;     // Partial result of multiplicatio to accumulator input
+    wire [31:0] partial_result_3_s;     // Partial result of multiplicatio to accumulator input
+    wire [31:0] partial_result_4_s;     // Partial result of multiplicatio to accumulator input
+
+    reg  [31:0] AC_s;                 // Accumulator value
 
     
 
@@ -194,31 +204,31 @@ module multiplier_DP_V2 (
         endcase
     end
 
+    assign M0_mux_s = (reg_upper_s) ? A0_x_B0_sft_s[63:32] : A0_x_B0_sft_s[31:0];
+    assign M1_mux_s = (reg_upper_s) ? A1_x_B1_sft_s[63:32] : A1_x_B1_sft_s[31:0];
+    assign M2_mux_s = (reg_upper_s) ? A2_x_B2_sft_s[63:32] : A2_x_B2_sft_s[31:0];
+    assign M3_mux_s = (reg_upper_s) ? A3_x_B3_sft_s[63:32] : A3_x_B3_sft_s[31:0];
+
+    assign low_mul_res_1_s = {2'b00, A3_x_B3_sft_s[31:0]} + {2'b00, A2_x_B2_sft_s[31:0]} + {2'b00, A1_x_B1_sft_s[31:0]} + {2'b00, A0_x_B0_sft_s[31:0]};
+
+    assign low_mul_co_s = (reg_upper_s) ? low_mul_res_1_s[33:32] : 2'b00;
+
+
     // Adders tree (2 layers + AC adder)
-    assign partial_result_1_s = A0_x_B0_sft_s + A1_x_B1_sft_s;
-    assign partial_result_2_s = A2_x_B2_sft_s + A3_x_B3_sft_s;
-    assign partial_result_3_s = partial_result_1_s + partial_result_2_s;
+    assign partial_result_1_s = M0_mux_s + M1_mux_s + M2_mux_s + M3_mux_s + low_mul_co_s;
 
-
-    always@(posedge clk_i, posedge rst_i) begin
-        if (rst_i) 
-            reg_pipe_result_s <= 64'h0000000000000000;
-        else if (en_pipe_i)
-            reg_pipe_result_s <= partial_result_3_s;
-    end
 
 
     // Accumulator
     always@(posedge clk_i, posedge rst_i) begin
         if (rst_i) begin
-            AC_s <= 64'h0000000000000000;
+            AC_s <= 32'h00000000;
         end
         else if (reg_pipe_AC_en_s) begin
-            AC_s <= AC_s + reg_pipe_result_s;
+            AC_s <= AC_s + partial_result_1_s;
         end
     end
 
-    // Result MUX
-    assign result_o = (reg_upper_s==1'b1) ? AC_s[63:32] : AC_s[31:0];
+    assign result_o = AC_s;
 
 endmodule

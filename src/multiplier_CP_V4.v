@@ -1,4 +1,4 @@
-module multiplier_CP_V2 (
+module multiplier_CP_V4 (
     // INPUTS
     input wire clk_i,
     input wire rst_i,

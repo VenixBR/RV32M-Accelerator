@@ -8,7 +8,7 @@ module multiplier_tb;
     logic [6:0] opcode, funct7;
     logic [2:0] funct3;
 
-    multiplier_top DUT (
+    multiplier_top_V2 DUT (
         .clk_i      ( clk     ),
         .rst_i      ( rst     ),
         .mult_en_i  ( mult_on ),
