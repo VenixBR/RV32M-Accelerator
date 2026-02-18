@@ -1,5 +1,5 @@
 export ROOT       = $(CURDIR)
-export DESIGN_    = multiplier_top_V2
+export DESIGN_    = multiplier_top_V6
 export FREQ_MHZ   ?= 200
 export OP_CORNER  ?= slow
        RTL_DIR    = ${ROOT}/src
@@ -25,12 +25,20 @@ Decoder_xcelium:
 		xrun -v2001 ${RTL_DIR}/decoder.v ${TESTS_DIR}/decoder_tb.sv $(FLAGS); \
 	fi
 
-Multiplier_xcelium:
+Mult_xcelium:
 	cd ${ROOT}/synthesis/work && \
 	if [ "$(TB)" = "0" ]; then \
-		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v $(FLAGS); \
+		xrun -v2001 ${RTL_DIR}/decoder.v $(FLAGS); \
 	else \
-		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v ${RTL_DIR}/decoder.v ${TESTS_DIR}/multiplier_tb.sv $(FLAGS); \
+		xrun -v2001 ${RTL_DIR}/mult.v ${TESTS_DIR}/mult_tb.sv $(FLAGS); \
+	fi
+
+Co_detector_xcelium:
+	cd ${ROOT}/synthesis/work && \
+	if [ "$(TB)" = "0" ]; then \
+		xrun -v2001 ${RTL_DIR}/Co_detector.v $(FLAGS); \
+	else \
+		xrun -v2001 ${RTL_DIR}/Co_detector.v ${TESTS_DIR}/Co_detector_tb.sv $(FLAGS); \
 	fi
 
 Multiplier_V1_xcelium:
@@ -55,6 +63,22 @@ Multiplier_V4_xcelium:
 		xrun -v2001 ${RTL_DIR}/multiplier_CP_V4.v ${RTL_DIR}/multiplier_DP_V4.v ${RTL_DIR}/multiplier_top_V4.v $(FLAGS); \
 	else \
 		xrun -v2001 ${RTL_DIR}/multiplier_CP_V4.v ${RTL_DIR}/multiplier_DP_V4.v ${RTL_DIR}/multiplier_top_V4.v ${RTL_DIR}/decoder.v ${TESTS_DIR}/multiplier_tb_V4.sv $(FLAGS); \
+	fi
+
+Multiplier_V5_xcelium:
+	cd ${ROOT}/synthesis/work && \
+	if [ "$(TB)" = "0" ]; then \
+		xrun -v2001 ${RTL_DIR}/multiplier_CP_V5.v ${RTL_DIR}/Co_detector.v ${RTL_DIR}/multiplier_DP_V5.v ${RTL_DIR}/multiplier_top_V5.v $(FLAGS); \
+	else \
+		xrun -v2001 ${RTL_DIR}/multiplier_CP_V5.v ${RTL_DIR}/Co_detector.v ${RTL_DIR}/multiplier_DP_V5.v ${RTL_DIR}/multiplier_top_V5.v ${TESTS_DIR}/multiplier_tb_V5.sv $(FLAGS); \
+	fi
+
+Multiplier_V6_xcelium:
+	cd ${ROOT}/synthesis/work && \
+	if [ "$(TB)" = "0" ]; then \
+		xrun -v2001 ${RTL_DIR}/multiplier_CP_V6.v ${RTL_DIR}/Co_detector.v ${RTL_DIR}/multiplier_DP_V6.v ${RTL_DIR}/multiplier_top_V6.v $(FLAGS); \
+	else \
+		xrun -v2001 ${RTL_DIR}/multiplier_CP_V6.v ${RTL_DIR}/Co_detector.v ${RTL_DIR}/multiplier_DP_V6.v ${RTL_DIR}/multiplier_top_V6.v ${TESTS_DIR}/multiplier_tb_V6.sv $(FLAGS); \
 	fi
 
 Run_Logical_Synth:
@@ -90,6 +114,14 @@ Multiplier_pipe_icarus:
 Multiplier_CP_icarus:
 	cd ${ROOT}/synthesis/work && \
 	iverilog -g2012 -o testbench ${RTL_DIR}/multiplier_CP.v ${TESTS_DIR}/multiplier_CP_tb.sv && \
+	vvp testbench && \
+	if [ "$(GUI)" = "1" ]; then \
+		gtkwave dump.vcd; \
+	fi
+
+Mult_icarus:
+	cd ${ROOT}/synthesis/work && \
+	iverilog -g2012 -Wall -DDEBUG -o testbench ${RTL_DIR}/mult.v ${TESTS_DIR}/mult_tb.sv && \
 	vvp testbench && \
 	if [ "$(GUI)" = "1" ]; then \
 		gtkwave dump.vcd; \

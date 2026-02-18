@@ -1,4 +1,4 @@
-module multiplier_DP_V4 ( 
+module multiplier_DP_V5 ( 
     
     // Inputs
     input wire        clk_i,
@@ -82,7 +82,7 @@ module multiplier_DP_V4 (
 
     wire [33:0] low_mul_res_1_s;  
     wire [33:0] low_mul_res_2_s;  
-    wire [33:0] low_mul_res_3_s;  
+    wire [1:0] low_mul_res_3_s;  
     wire [1:0]  low_mul_co_s;
 
     reg  [31:0] reg_pipe_result_s;
@@ -214,15 +214,22 @@ module multiplier_DP_V4 (
     assign M2_mux_s = (reg_upper_s) ? A2_x_B2_sft_s[63:32] : A2_x_B2_sft_s[31:0];
     assign M3_mux_s = (reg_upper_s) ? A3_x_B3_sft_s[63:32] : A3_x_B3_sft_s[31:0];
 
-    assign low_mul_res_1_s = {2'b00, A3_x_B3_sft_s[31:0]} + {2'b00, A2_x_B2_sft_s[31:0]};
-    assign low_mul_res_2_s = {2'b00, A1_x_B1_sft_s[31:0]} + {2'b00, A0_x_B0_sft_s[31:0]};
-    assign low_mul_res_3_s = low_mul_res_2_s + low_mul_res_1_s;
 
-    assign low_mul_co_s = (reg_upper_s) ? low_mul_res_3_s[33:32] : 2'b00;
+    Co_detector LOW_MULT_CO_inst (
+        .A_i  ( A0_x_B0_sft_s[31:0] ),
+        .B_i  ( A1_x_B1_sft_s[31:0] ),
+        .C_i  ( A2_x_B2_sft_s[31:0] ),
+        .D_i  ( A3_x_B3_sft_s[31:0] ),
+        .Co_o ( low_mul_res_3_s ) 
+    );
+
+    assign low_mul_co_s = (reg_upper_s) ? low_mul_res_3_s : 2'b00;
 
 
     // Adders tree (2 layers + AC adder)
-    assign partial_result_1_s = (M0_mux_s + M1_mux_s) + (M2_mux_s + M3_mux_s);
+    assign partial_result_1_s = M0_mux_s + M1_mux_s;
+    assign partial_result_2_s = M2_mux_s + M3_mux_s;
+    assign partial_result_3_s = partial_result_1_s + partial_result_2_s;
 
     always@(posedge clk_i, posedge rst_i) begin
         if (rst_i) begin
@@ -230,7 +237,7 @@ module multiplier_DP_V4 (
             reg_pipe_co_s   <= 2'b00;
         end
         else if (en_pipe_i) begin
-            reg_pipe_result_s <= partial_result_1_s;
+            reg_pipe_result_s <= partial_result_3_s;
             reg_pipe_co_s   <= low_mul_co_s;
         end
     end

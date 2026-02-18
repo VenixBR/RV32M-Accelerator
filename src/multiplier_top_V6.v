@@ -1,0 +1,82 @@
+/*
+1 pipeline stage with low-upper mux
+CRITICAL PATH : lower part carry out circuit
+
+PDK      : Cadence 45nm
+MAX FREQ : 315 MHz
+CYCLES   : 7
+TIME     : 22,19 ns
+POWER    : 2381,01 uW
+ENERGY   : 52,83 pJ 
+AREA     : 12600,49 um2
+*/
+
+
+
+module multiplier_top_V6 (
+
+    // Inputs
+    input wire clk_i,
+    input wire rst_i,
+    input wire mult_en_i,
+    input wire [31:0] op_A_i,
+    input wire [31:0] op_B_i,
+    input wire signed_A_i,
+    input wire signed_B_i,
+    input wire upper_i,
+
+    // Outputs
+    output wire [31:0] result_o,
+    output wire done_o
+);
+
+    // Interconnect signals
+    wire       reg_A_en_s;
+    wire       reg_B_en_s;
+    wire       AC_en_s;
+    wire       en_pipe_s;
+    wire       mux_B_sel_s;
+    wire       shift_amount_s;
+    wire       rol_en_s;
+
+    // CONTROL PATH
+    multiplier_CP_V6 MULT_CP_inst(
+        // INPUTS
+        .clk_i          ( clk_i          ),
+        .rst_i          ( rst_i          ),
+        .mult_en_i      ( mult_en_i      ),
+
+        // OUTPUTS
+        .reg_A_en_o     ( reg_A_en_s     ),
+        .reg_B_en_o     ( reg_B_en_s     ),
+        .AC_en_o        ( AC_en_s        ),
+        .en_pipe_o      ( en_pipe_s      ),
+        .mux_B_sel_o    ( mux_B_sel_s    ),
+        .shift_amount_o ( shift_amount_s ),
+        .rol_en_o       ( rol_en_s       ),
+        .done_o         ( done_o         )
+    );
+
+    multiplier_DP_V6 MULT_DP_inst ( 
+        // Inputs
+        .clk_i          ( clk_i          ),
+        .rst_i          ( rst_i          ),
+        .signed_A_i     ( signed_A_i     ),
+        .signed_B_i     ( signed_B_i     ),
+        .upper_i        ( upper_i        ),
+        .op_A_i         ( op_A_i         ),
+        .op_B_i         ( op_B_i         ),
+        .reg_A_en_i     ( reg_A_en_s     ),
+        .reg_B_en_i     ( reg_B_en_s     ),
+        .AC_en_i        ( AC_en_s        ),
+        .en_pipe_i      ( en_pipe_s      ),
+        .mux_B_sel_i    ( mux_B_sel_s    ),
+        .shift_amount_i ( shift_amount_s ),
+        .rol_en_i       ( rol_en_s       ),
+
+        // Outputs
+        .result_o       ( result_o       )
+    );
+
+
+endmodule
