@@ -1,6 +1,6 @@
 module multiplier_tb;
 
-    localparam TESTS_NUM = 3;
+    localparam TESTS_NUM = 3000;
 
     logic sigA;
     logic [1:0] sigB;
@@ -71,7 +71,6 @@ module multiplier_tb;
     initial begin
         $dumpfile("dump.vcd");
         $dumpvars(0, DUT1, DUT2, temp_mult2,temp_mult1);
-        void'($urandom($time));
 
         $display("\n+------------+------------+------------+------------+-------+-------+");
         $display(  "| INPUT A    | INPUT B    | ANSWER 1   | ANSWER 2   | Err A | Err B |");

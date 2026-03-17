@@ -154,10 +154,10 @@ module multiplier
     assign A3B2_sft_s = A3B2_ext_s<<20;
     assign A3B3_sft_s = A3B3_ext_s<<24;
 
-    assign writeback_value_o = A0B0_sft_s + A0B1_sft_s + A0B2_sft_s + A0B3_sft_s +
-                               A1B0_sft_s + A1B1_sft_s + A1B2_sft_s + A1B3_sft_s +
-                               A2B0_sft_s + A2B1_sft_s + A2B2_sft_s + A2B3_sft_s +
-                               A3B0_sft_s + A3B1_sft_s + A3B2_sft_s + A3B3_sft_s;
+    assign writeback_value_o = {A0B0_sft_s[32:4] + A0B1_sft_s[32:4] + A0B2_sft_s[32:4] + A0B3_sft_s[32:4] +
+                               A1B0_sft_s[32:4] + A1B1_sft_s[32:4] + A1B2_sft_s[32:4] + A1B3_sft_s[32:4] +
+                               A2B0_sft_s[32:4] + A2B1_sft_s[32:4] + A2B2_sft_s[32:4] + A2B3_sft_s[32:4] +
+                               A3B0_sft_s[32:4] + A3B1_sft_s[32:4] + A3B2_sft_s[32:4] + A3B3_sft_s[32:4], A0B0_sft_s[3:0]};
 
 
 endmodule
