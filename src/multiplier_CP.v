@@ -11,24 +11,18 @@ module multiplier_CP (
     output reg       en_pipe_o,       // enable of pipeline registers
     output reg       mux_B_sel_o,     // mux selector of operand B
     output reg       shift_amount_o,  // shift amount to multiplier results
-    output reg       rol_en_o,        // left rotate amount to operand B
     output reg       done_o           // indicates when the operation ends
 );
 
     // Stages codification
-    localparam INIT   = 3'b000;
-    localparam MULT_1 = 3'b001;
-    localparam MULT_2 = 3'b011;
-
-    localparam MULT_3 = 3'b010;
-    localparam MULT_4 = 3'b110;
-    localparam WAIT_1 = 3'b100;
-    localparam WAIT_2 = 3'b101;
-    localparam DONE   = 3'b111;
+    localparam INIT   = 3'b00;
+    localparam MULT_1 = 3'b01;
+    localparam MULT_2 = 3'b11;
+    localparam DONE   = 3'b10;
 
     // SIGNALS 
-    reg [2:0] Current_State_s;
-    reg [2:0] Next_State_s;
+    reg [1:0] Current_State_s;
+    reg [1:0] Next_State_s;
 
 
     // NEXT STAGE LOGIC
@@ -36,12 +30,8 @@ module multiplier_CP (
         case(Current_State_s)
             INIT    : begin Next_State_s = (mult_en_i) ? MULT_1 : INIT; end
             MULT_1  : begin Next_State_s = MULT_2; end
-            MULT_2  : begin Next_State_s = MULT_3; end
-            MULT_3  : begin Next_State_s = MULT_4; end
-            MULT_4  : begin Next_State_s = WAIT_1; end
-            WAIT_1  : begin Next_State_s = WAIT_2; end
-            WAIT_2  : begin Next_State_s = DONE;   end
-            DONE    : begin Next_State_s = DONE;   end
+            MULT_2  : begin Next_State_s = DONE; end
+            DONE    : begin Next_State_s = DONE; end
         endcase
     end
 
@@ -63,10 +53,9 @@ module multiplier_CP (
                 reg_A_en_o     = 1'b1;
                 reg_B_en_o     = 1'b1;
                 AC_en_o        = 1'b0;
-                en_pipe_o      = 1'b0;
+                en_pipe_o      = 1'b1;
                 mux_B_sel_o    = 1'b0;
                 shift_amount_o = 1'b0;
-                rol_en_o       = 1'b0;
                 done_o         = 1'b0;
             end
             MULT_1 : begin
@@ -76,57 +65,15 @@ module multiplier_CP (
                 en_pipe_o      = 1'b1;
                 mux_B_sel_o    = 1'b1;
                 shift_amount_o = 1'b0;
-                rol_en_o       = 1'b1;
                 done_o         = 1'b0;
             end
             MULT_2 : begin
                 reg_A_en_o     = 1'b0;
-                reg_B_en_o     = 1'b1;
-                AC_en_o        = 1'b1;
-                en_pipe_o      = 1'b1;
-                mux_B_sel_o    = 1'b1;
-                shift_amount_o = 1'b1;
-                rol_en_o       = 1'b1;
-                done_o         = 1'b0;
-            end
-            MULT_3 : begin
-                reg_A_en_o     = 1'b0;
-                reg_B_en_o     = 1'b1;
-                AC_en_o        = 1'b1;
-                en_pipe_o      = 1'b1;
-                mux_B_sel_o    = 1'b1;
-                shift_amount_o = 1'b1;
-                rol_en_o       = 1'b1;
-                done_o         = 1'b1;
-            end
-            MULT_4 : begin
-                reg_A_en_o     = 1'b0;
-                reg_B_en_o     = 1'b1;
-                AC_en_o        = 1'b1;
-                en_pipe_o      = 1'b1;
-                mux_B_sel_o    = 1'b1;
-                shift_amount_o = 1'b1;
-                rol_en_o       = 1'b1;
-                done_o         = 1'b1;
-            end
-            WAIT_1 : begin
-                reg_A_en_o     = 1'b0;
                 reg_B_en_o     = 1'b0;
                 AC_en_o        = 1'b1;
                 en_pipe_o      = 1'b1;
                 mux_B_sel_o    = 1'b0;
                 shift_amount_o = 1'b1;
-                rol_en_o       = 1'b0;
-                done_o         = 1'b0;
-            end
-            WAIT_2 : begin
-                reg_A_en_o     = 1'b0;
-                reg_B_en_o     = 1'b0;
-                AC_en_o        = 1'b0;
-                en_pipe_o      = 1'b1;
-                mux_B_sel_o    = 1'b0;
-                shift_amount_o = 1'b1;
-                rol_en_o       = 1'b0;
                 done_o         = 1'b0;
             end
             DONE : begin
@@ -135,14 +82,9 @@ module multiplier_CP (
                 AC_en_o        = 1'b0;
                 en_pipe_o      = 1'b0;
                 mux_B_sel_o    = 1'b0;
-                shift_amount_o = 1'b1;
-                rol_en_o       = 1'b0;
+                shift_amount_o = 1'b0;
                 done_o         = 1'b1;
             end
-            // default : begin
-            //     reg_A_en_o     = 1'b0;
-            //     reg_B_en_o     = 1'b0;
-            //     AC_en_o        = 1'b0;module multiplier_CP_V6 (
         endcase
     end
 

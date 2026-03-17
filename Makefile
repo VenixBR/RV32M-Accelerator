@@ -46,7 +46,7 @@ Multiplier_xcelium:
 	if [ "$(TB)" = "0" ]; then \
 		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/Co_detector.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v $(FLAGS); \
 	else \
-		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/Co_detector.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v ${TESTS_DIR}/multiplier_tb.sv $(FLAGS); \
+		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/mult.v  ${RTL_DIR}/Co_detector.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v ${TESTS_DIR}/multiplier_tb.sv $(FLAGS); \
 	fi
 
 Run_Logical_Synth:

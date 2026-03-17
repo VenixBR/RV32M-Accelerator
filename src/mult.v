@@ -1,6 +1,9 @@
 module multiplier
 (
     // Inputs
+    input           clk_i,
+    input           rst_i,
+    input           en_pipe_i,
     input  [ 15:0]  A_i,
     input  [ 15:0]  B_i,
     input sigA_i,
@@ -120,22 +123,66 @@ module multiplier
     assign A3B2_s = A3_ext_s*B2_ext_s;
     assign A3B3_s = A3_ext_s*B3_ext_s;
 
-    assign A0B0_ext_s = {{24{A0B0_s[8]}}, A0B0_s};
-    assign A0B1_ext_s = {{24{A0B1_s[8]}}, A0B1_s};
-    assign A0B2_ext_s = {{24{A0B2_s[8]}}, A0B2_s};
-    assign A0B3_ext_s = {{24{A0B3_s[8]}}, A0B3_s};
-    assign A1B0_ext_s = {{24{A1B0_s[8]}}, A1B0_s};
-    assign A1B1_ext_s = {{24{A1B1_s[8]}}, A1B1_s};
-    assign A1B2_ext_s = {{24{A1B2_s[8]}}, A1B2_s};
-    assign A1B3_ext_s = {{24{A1B3_s[8]}}, A1B3_s};
-    assign A2B0_ext_s = {{24{A2B0_s[8]}}, A2B0_s};
-    assign A2B1_ext_s = {{24{A2B1_s[8]}}, A2B1_s};
-    assign A2B2_ext_s = {{24{A2B2_s[8]}}, A2B2_s};
-    assign A2B3_ext_s = {{24{A2B3_s[8]}}, A2B3_s};
-    assign A3B0_ext_s = {{24{A3B0_s[8]}}, A3B0_s};
-    assign A3B1_ext_s = {{24{A3B1_s[8]}}, A3B1_s};
-    assign A3B2_ext_s = {{24{A3B2_s[8]}}, A3B2_s};
-    assign A3B3_ext_s = {{24{A3B3_s[8]}}, A3B3_s};
+    reg [8:0] reg_pipe_AB_s [15:0];
+
+
+    always@(posedge clk_i, posedge rst_i) begin
+        if (rst_i) begin
+            reg_pipe_AB_s[0] <= 9'b000000000;
+            reg_pipe_AB_s[1] <= 9'b000000000;
+            reg_pipe_AB_s[2] <= 9'b000000000;
+            reg_pipe_AB_s[3] <= 9'b000000000;
+            reg_pipe_AB_s[4] <= 9'b000000000;
+            reg_pipe_AB_s[5] <= 9'b000000000;
+            reg_pipe_AB_s[6] <= 9'b000000000;
+            reg_pipe_AB_s[7] <= 9'b000000000;
+            reg_pipe_AB_s[8] <= 9'b000000000;
+            reg_pipe_AB_s[9] <= 9'b000000000;
+            reg_pipe_AB_s[10] <= 9'b000000000;
+            reg_pipe_AB_s[11] <= 9'b000000000;
+            reg_pipe_AB_s[12] <= 9'b000000000;
+            reg_pipe_AB_s[13] <= 9'b000000000;
+            reg_pipe_AB_s[14] <= 9'b000000000;
+            reg_pipe_AB_s[15] <= 9'b000000000;
+        end
+            else if(en_pipe_i) begin
+                reg_pipe_AB_s[0] <= A0B0_s;
+                reg_pipe_AB_s[1] <= A0B1_s;
+                reg_pipe_AB_s[2] <= A0B2_s;
+                reg_pipe_AB_s[3] <= A0B3_s;
+                reg_pipe_AB_s[4] <= A1B0_s;
+                reg_pipe_AB_s[5] <= A1B1_s;
+                reg_pipe_AB_s[6] <= A1B2_s;
+                reg_pipe_AB_s[7] <= A1B3_s;
+                reg_pipe_AB_s[8] <= A2B0_s;
+                reg_pipe_AB_s[9] <= A2B1_s;
+                reg_pipe_AB_s[10] <= A2B2_s;
+                reg_pipe_AB_s[11] <= A2B3_s;
+                reg_pipe_AB_s[12] <= A3B0_s;
+                reg_pipe_AB_s[13] <= A3B1_s;
+                reg_pipe_AB_s[14] <= A3B2_s;
+                reg_pipe_AB_s[15] <= A3B3_s;
+            end
+        end
+
+
+
+    assign A0B0_ext_s = {{24{reg_pipe_AB_s[0][8]}}, reg_pipe_AB_s[0]};
+    assign A0B1_ext_s = {{24{reg_pipe_AB_s[1][8]}}, reg_pipe_AB_s[1]};
+    assign A0B2_ext_s = {{24{reg_pipe_AB_s[2][8]}}, reg_pipe_AB_s[2]};
+    assign A0B3_ext_s = {{24{reg_pipe_AB_s[3][8]}}, reg_pipe_AB_s[3]};
+    assign A1B0_ext_s = {{24{reg_pipe_AB_s[4][8]}}, reg_pipe_AB_s[4]};
+    assign A1B1_ext_s = {{24{reg_pipe_AB_s[5][8]}}, reg_pipe_AB_s[5]};
+    assign A1B2_ext_s = {{24{reg_pipe_AB_s[6][8]}}, reg_pipe_AB_s[6]};
+    assign A1B3_ext_s = {{24{reg_pipe_AB_s[7][8]}}, reg_pipe_AB_s[7]};
+    assign A2B0_ext_s = {{24{reg_pipe_AB_s[8][8]}}, reg_pipe_AB_s[8]};
+    assign A2B1_ext_s = {{24{reg_pipe_AB_s[9][8]}}, reg_pipe_AB_s[9]};
+    assign A2B2_ext_s = {{24{reg_pipe_AB_s[10][8]}}, reg_pipe_AB_s[10]};
+    assign A2B3_ext_s = {{24{reg_pipe_AB_s[11][8]}}, reg_pipe_AB_s[11]};
+    assign A3B0_ext_s = {{24{reg_pipe_AB_s[12][8]}}, reg_pipe_AB_s[12]};
+    assign A3B1_ext_s = {{24{reg_pipe_AB_s[13][8]}}, reg_pipe_AB_s[13]};
+    assign A3B2_ext_s = {{24{reg_pipe_AB_s[14][8]}}, reg_pipe_AB_s[14]};
+    assign A3B3_ext_s = {{24{reg_pipe_AB_s[15][8]}}, reg_pipe_AB_s[15]};
 
     assign A0B0_sft_s = A0B0_ext_s;
     assign A0B1_sft_s = A0B1_ext_s<<4;

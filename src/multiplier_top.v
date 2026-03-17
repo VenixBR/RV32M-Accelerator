@@ -37,7 +37,7 @@ module multiplier_top (
     wire       en_pipe_s;
     wire       mux_B_sel_s;
     wire       shift_amount_s;
-    wire       rol_en_s;
+    wire       done_s;
 
     // CONTROL PATH
     multiplier_CP MULT_CP_inst(
@@ -53,8 +53,7 @@ module multiplier_top (
         .en_pipe_o      ( en_pipe_s      ),
         .mux_B_sel_o    ( mux_B_sel_s    ),
         .shift_amount_o ( shift_amount_s ),
-        .rol_en_o       ( rol_en_s       ),
-        .done_o         ( done_o         )
+        .done_o         ( done_s         )
     );
 
     multiplier_DP MULT_DP_inst ( 
@@ -63,6 +62,7 @@ module multiplier_top (
         .rst_i          ( rst_i          ),
         .signed_A_i     ( signed_A_i     ),
         .signed_B_i     ( signed_B_i     ),
+        .done_i         ( done_s         ),
         .upper_i        ( upper_i        ),
         .op_A_i         ( op_A_i         ),
         .op_B_i         ( op_B_i         ),
@@ -72,9 +72,9 @@ module multiplier_top (
         .en_pipe_i      ( en_pipe_s      ),
         .mux_B_sel_i    ( mux_B_sel_s    ),
         .shift_amount_i ( shift_amount_s ),
-        .rol_en_i       ( rol_en_s       ),
 
         // Outputs
+        .done_o         ( done_o         ),
         .result_o       ( result_o       )
     );
 

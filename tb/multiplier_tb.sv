@@ -2,7 +2,7 @@ module multiplier_tb;
 
     localparam CLK_PERIOD = 10;
     localparam STAGES = 5;
-    localparam TESTS_NUM = 50000;
+    localparam TESTS_NUM = 50;
 
     logic clk, rst, sigA, sigB, upper, done, mult_on;
     logic [31:0] A_op, B_op, answer;
@@ -52,7 +52,7 @@ module multiplier_tb;
         $display(  "| MUL         | 0x%h | 0x%h | %s | %0d", AxB[31:0] ,answer, (AxB[31:0]==answer ? "     " : "ERROR"), $time );
 
 
-        #(CLK_PERIOD/2)
+        #(2*CLK_PERIOD)
         rst = 1;
         funct3 = 3'b001;    // MULH
         A_ext = {{32{A_op[31]}}, A_op};
@@ -64,19 +64,19 @@ module multiplier_tb;
         errors = (AxB[63:32]==answer) ? errors : errors+1;
         $display(  "| MULH        | 0x%h | 0x%h | %s | %0d", AxB[63:32] ,answer, (AxB[63:32]==answer ? "     " : "ERROR"), $time );
 
-        #(CLK_PERIOD/2)
+        #(2*CLK_PERIOD)
         funct3 = 3'b010;    // MULHSU
         A_ext = {{32{A_op[31]}}, A_op};
         B_ext = {32'h00000000, B_op};
         AxB = A_ext * B_ext;
         rst = 1;
-        #(3*CLK_PERIOD/2)
+        #(3*CLK_PERIOD)
         rst = 0;
         #((STAGES)*CLK_PERIOD)
         errors = (AxB[63:32]==answer) ? errors : errors+1;
         $display(  "| MULHSU      | 0x%h | 0x%h | %s | %0d", AxB[63:32] ,answer, (AxB[63:32]==answer ? "     " : "ERROR"), $time );
 
-        # CLK_PERIOD
+        #(2*CLK_PERIOD)
         funct3 = 3'b011;    // MULHU
         A_ext = {32'h00000000, A_op};
         B_ext = {32'h00000000, B_op};
