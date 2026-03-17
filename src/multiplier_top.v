@@ -13,7 +13,7 @@ AREA     : 12600,49 um2
 
 
 
-module multiplier_top_V4 (
+module multiplier_top (
 
     // Inputs
     input wire clk_i,
@@ -36,11 +36,11 @@ module multiplier_top_V4 (
     wire       AC_en_s;
     wire       en_pipe_s;
     wire       mux_B_sel_s;
-    wire [1:0] shift_amount_s;
+    wire       shift_amount_s;
     wire       rol_en_s;
 
     // CONTROL PATH
-    multiplier_CP_V4 MULT_CP_inst(
+    multiplier_CP MULT_CP_inst(
         // INPUTS
         .clk_i          ( clk_i          ),
         .rst_i          ( rst_i          ),
@@ -57,7 +57,7 @@ module multiplier_top_V4 (
         .done_o         ( done_o         )
     );
 
-    multiplier_DP_V4 MULT_DP_inst ( 
+    multiplier_DP MULT_DP_inst ( 
         // Inputs
         .clk_i          ( clk_i          ),
         .rst_i          ( rst_i          ),

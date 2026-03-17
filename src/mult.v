@@ -1,95 +1,163 @@
 module multiplier
 (
     // Inputs
-    input  [ 31:0]  A_i,
-    input  [ 31:0]  B_i,
+    input  [ 15:0]  A_i,
+    input  [ 15:0]  B_i,
+    input sigA_i,
+    input sigB_i,
     // Outputs
-    output [ 31:0]  writeback_value_o
+    output [ 32:0]  writeback_value_o
 );
 
-    wire [7:0] A_8b_s [7:0];
-    wire [7:0] B_8b_s [7:0];
+    wire [3:0] A3_s;
+    wire [3:0] A2_s;
+    wire [3:0] A1_s;
+    wire [3:0] A0_s;
 
-    wire [7:0] AxB_8b_s [35:0];
+    wire [3:0] B3_s;
+    wire [3:0] B2_s;
+    wire [3:0] B1_s;
+    wire [3:0] B0_s;
 
-    wire [31:0] sft_mult_s [35:0];
-    wire [31:0] mult_result_s;
+    wire [8:0] A3_ext_s;
+    wire [8:0] A2_ext_s;
+    wire [8:0] A1_ext_s;
+    wire [8:0] A0_ext_s;
 
+    wire [8:0] B3_ext_s;
+    wire [8:0] B2_ext_s;
+    wire [8:0] B1_ext_s;
+    wire [8:0] B0_ext_s;
 
-    /*===============================
-             8(A_4b) x 8(B_4b)
-    ===============================*/
+    wire [8:0] A0B0_s;
+    wire [8:0] A0B1_s;
+    wire [8:0] A0B2_s;
+    wire [8:0] A0B3_s;
+    wire [8:0] A1B0_s;
+    wire [8:0] A1B1_s;
+    wire [8:0] A1B2_s;
+    wire [8:0] A1B3_s;
+    wire [8:0] A2B0_s;
+    wire [8:0] A2B1_s;
+    wire [8:0] A2B2_s;
+    wire [8:0] A2B3_s;
+    wire [8:0] A3B0_s;
+    wire [8:0] A3B1_s;
+    wire [8:0] A3B2_s;
+    wire [8:0] A3B3_s;
 
-    genvar k;
-    generate
-        for (k=0 ; k<8 ; k=k+1) begin
-            assign A_8b_s[k] = {4'b0000, A_i[(k*4+3): k*4]};
-            assign B_8b_s[k] = {4'b0000, B_i[(k*4+3): k*4]};
-        end
-    endgenerate
+    wire [32:0] A0B0_ext_s;
+    wire [32:0] A0B1_ext_s;
+    wire [32:0] A0B2_ext_s;
+    wire [32:0] A0B3_ext_s;
+    wire [32:0] A1B0_ext_s;
+    wire [32:0] A1B1_ext_s;
+    wire [32:0] A1B2_ext_s;
+    wire [32:0] A1B3_ext_s;
+    wire [32:0] A2B0_ext_s;
+    wire [32:0] A2B1_ext_s;
+    wire [32:0] A2B2_ext_s;
+    wire [32:0] A2B3_ext_s;
+    wire [32:0] A3B0_ext_s;
+    wire [32:0] A3B1_ext_s;
+    wire [32:0] A3B2_ext_s;
+    wire [32:0] A3B3_ext_s;
 
-    genvar i, j;
-    generate
-        for (i = 0; i < 8; i = i + 1) begin : loopA
-            for (j=0; j < (8-i); j=j+1) begin : loopB
-
-                 //localparam int idx = (i*8) - (i*(i-1))/2 + j;
-
-                assign AxB_8b_s[(i*8) - (i*(i-1))/2 + j] = A_8b_s[i] * B_8b_s[j];
-
-            end
-        end
-    endgenerate
-
-
-
-
-
-    /*===============================
-            SHIFT RESULTS
-    ===============================*/
-
-    genvar m, n;
-    generate
-        for (m = 0; m < 8; m = m + 1) begin : gen_row
-            for (n = 0; n < (8 - m); n = n + 1) begin : gen_col
-                assign sft_mult_s[(m*8) - (m*(m-1))/2 + n] = AxB_8b_s[(m*8) - (m*(m-1))/2 + n] << 4 * (m + n);
-
-            end
-        end
-    endgenerate
-
-
-
-    /*===============================
-        EXTEND A AND B TO 33 BITS
-    ===============================*/
-
-    
-
-    assign mult_result_s = {sft_mult_s[0], sft_mult_s[2]}  + sft_mult_s[1]  + sft_mult_s[3]  +
-                           sft_mult_s[4]  + sft_mult_s[5]  + sft_mult_s[6]  + sft_mult_s[7]  + 
-                           sft_mult_s[8]  + sft_mult_s[9]  + sft_mult_s[10] + sft_mult_s[11] +
-                           sft_mult_s[12] + sft_mult_s[13] + sft_mult_s[14] + sft_mult_s[15] +
-                           sft_mult_s[16] + sft_mult_s[17] + sft_mult_s[18] + sft_mult_s[19] +
-                           sft_mult_s[20] + sft_mult_s[21] + sft_mult_s[22] + sft_mult_s[23] +
-                           sft_mult_s[24] + sft_mult_s[25] + sft_mult_s[26] + sft_mult_s[27] +
-                           sft_mult_s[28] + sft_mult_s[29] + sft_mult_s[30] + sft_mult_s[31] +
-                           sft_mult_s[32] + sft_mult_s[33] + sft_mult_s[34] + sft_mult_s[35];
-
+    wire [32:0] A0B0_sft_s;
+    wire [32:0] A0B1_sft_s;
+    wire [32:0] A0B2_sft_s;
+    wire [32:0] A0B3_sft_s;
+    wire [32:0] A1B0_sft_s;
+    wire [32:0] A1B1_sft_s;
+    wire [32:0] A1B2_sft_s;
+    wire [32:0] A1B3_sft_s;
+    wire [32:0] A2B0_sft_s;
+    wire [32:0] A2B1_sft_s;
+    wire [32:0] A2B2_sft_s;
+    wire [32:0] A2B3_sft_s;
+    wire [32:0] A3B0_sft_s;
+    wire [32:0] A3B1_sft_s;
+    wire [32:0] A3B2_sft_s;
+    wire [32:0] A3B3_sft_s;
 
 
-    assign mult_result_s = sft_mult_s[0]  + sft_mult_s[1]  + sft_mult_s[2]  + sft_mult_s[3]  +
-                           sft_mult_s[4]  + sft_mult_s[5]  + sft_mult_s[6]  + sft_mult_s[7]  + 
-                           sft_mult_s[8]  + sft_mult_s[9]  + sft_mult_s[10] + sft_mult_s[11] +
-                           sft_mult_s[12] + sft_mult_s[13] + sft_mult_s[14] + sft_mult_s[15] +
-                           sft_mult_s[16] + sft_mult_s[17] + sft_mult_s[18] + sft_mult_s[19] +
-                           sft_mult_s[20] + sft_mult_s[21] + sft_mult_s[22] + sft_mult_s[23] +
-                           sft_mult_s[24] + sft_mult_s[25] + sft_mult_s[26] + sft_mult_s[27] +
-                           sft_mult_s[28] + sft_mult_s[29] + sft_mult_s[30] + sft_mult_s[31] +
-                           sft_mult_s[32] + sft_mult_s[33] + sft_mult_s[34] + sft_mult_s[35];
 
-    assign writeback_value_o = mult_result_s;
-    
+
+    assign A3_s = A_i[15:12];
+    assign A2_s = A_i[11:8];
+    assign A1_s = A_i[7:4];
+    assign A0_s = A_i[3:0];
+
+    assign B3_s = B_i[15:12];
+    assign B2_s = B_i[11:8];
+    assign B1_s = B_i[7:4];
+    assign B0_s = B_i[3:0];
+
+    assign A3_ext_s = (sigA_i) ? {{5{A3_s[3]}},A3_s} : {5'b00000, A3_s};
+    assign A2_ext_s = {5'b00000, A2_s};
+    assign A1_ext_s = {5'b00000, A1_s};
+    assign A0_ext_s = {5'b00000, A0_s};
+
+    assign B3_ext_s = (sigB_i) ? {{5{B3_s[3]}},B3_s} : {5'b00000, B3_s};
+    assign B2_ext_s = {5'b00000, B2_s};
+    assign B1_ext_s = {5'b00000, B1_s};
+    assign B0_ext_s = {5'b00000, B0_s};
+
+    assign A0B0_s = A0_ext_s*B0_ext_s;
+    assign A0B1_s = A0_ext_s*B1_ext_s;
+    assign A0B2_s = A0_ext_s*B2_ext_s;
+    assign A0B3_s = A0_ext_s*B3_ext_s;
+    assign A1B0_s = A1_ext_s*B0_ext_s;
+    assign A1B1_s = A1_ext_s*B1_ext_s;
+    assign A1B2_s = A1_ext_s*B2_ext_s;
+    assign A1B3_s = A1_ext_s*B3_ext_s;
+    assign A2B0_s = A2_ext_s*B0_ext_s;
+    assign A2B1_s = A2_ext_s*B1_ext_s;
+    assign A2B2_s = A2_ext_s*B2_ext_s;
+    assign A2B3_s = A2_ext_s*B3_ext_s;
+    assign A3B0_s = A3_ext_s*B0_ext_s;
+    assign A3B1_s = A3_ext_s*B1_ext_s;
+    assign A3B2_s = A3_ext_s*B2_ext_s;
+    assign A3B3_s = A3_ext_s*B3_ext_s;
+
+    assign A0B0_ext_s = {{24{A0B0_s[8]}}, A0B0_s};
+    assign A0B1_ext_s = {{24{A0B1_s[8]}}, A0B1_s};
+    assign A0B2_ext_s = {{24{A0B2_s[8]}}, A0B2_s};
+    assign A0B3_ext_s = {{24{A0B3_s[8]}}, A0B3_s};
+    assign A1B0_ext_s = {{24{A1B0_s[8]}}, A1B0_s};
+    assign A1B1_ext_s = {{24{A1B1_s[8]}}, A1B1_s};
+    assign A1B2_ext_s = {{24{A1B2_s[8]}}, A1B2_s};
+    assign A1B3_ext_s = {{24{A1B3_s[8]}}, A1B3_s};
+    assign A2B0_ext_s = {{24{A2B0_s[8]}}, A2B0_s};
+    assign A2B1_ext_s = {{24{A2B1_s[8]}}, A2B1_s};
+    assign A2B2_ext_s = {{24{A2B2_s[8]}}, A2B2_s};
+    assign A2B3_ext_s = {{24{A2B3_s[8]}}, A2B3_s};
+    assign A3B0_ext_s = {{24{A3B0_s[8]}}, A3B0_s};
+    assign A3B1_ext_s = {{24{A3B1_s[8]}}, A3B1_s};
+    assign A3B2_ext_s = {{24{A3B2_s[8]}}, A3B2_s};
+    assign A3B3_ext_s = {{24{A3B3_s[8]}}, A3B3_s};
+
+    assign A0B0_sft_s = A0B0_ext_s;
+    assign A0B1_sft_s = A0B1_ext_s<<4;
+    assign A0B2_sft_s = A0B2_ext_s<<8;
+    assign A0B3_sft_s = A0B3_ext_s<<12;
+    assign A1B0_sft_s = A1B0_ext_s<<4;
+    assign A1B1_sft_s = A1B1_ext_s<<8;
+    assign A1B2_sft_s = A1B2_ext_s<<12;
+    assign A1B3_sft_s = A1B3_ext_s<<16;
+    assign A2B0_sft_s = A2B0_ext_s<<8;
+    assign A2B1_sft_s = A2B1_ext_s<<12;
+    assign A2B2_sft_s = A2B2_ext_s<<16;
+    assign A2B3_sft_s = A2B3_ext_s<<20;
+    assign A3B0_sft_s = A3B0_ext_s<<12;
+    assign A3B1_sft_s = A3B1_ext_s<<16;
+    assign A3B2_sft_s = A3B2_ext_s<<20;
+    assign A3B3_sft_s = A3B3_ext_s<<24;
+
+    assign writeback_value_o = A0B0_sft_s + A0B1_sft_s + A0B2_sft_s + A0B3_sft_s +
+                               A1B0_sft_s + A1B1_sft_s + A1B2_sft_s + A1B3_sft_s +
+                               A2B0_sft_s + A2B1_sft_s + A2B2_sft_s + A2B3_sft_s +
+                               A3B0_sft_s + A3B1_sft_s + A3B2_sft_s + A3B3_sft_s;
+
 
 endmodule
