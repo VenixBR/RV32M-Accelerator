@@ -64,8 +64,6 @@ module multiplier_DP (
     wire [31:0] mult_result1_s;
 
 
-
-
     reg  [32:0] pipe_S2_A0xB0_s;     // PIPELINE REGISTERS
     reg  [32:0] pipe_S2_A1xB1_s;
     reg         pipe_S2_shift_amount_s;
@@ -84,24 +82,18 @@ module multiplier_DP (
     reg  [63:0] A0_x_B0_sft_s;        // A0 x B0 shifted
     reg  [63:0] A1_x_B1_sft_s;        // A1 x B1 shifted
 
-    wire [31:0] M0_mux_s;
-    wire [31:0] M1_mux_s;
-
-    wire        detect_co_s;
-    wire        low_mul_co_s;
 
     reg  [63:0] pipe_S3_result_s;
     reg         reg_pipe_co_s;
 
-    wire [63:0] partial_result_1_s;     // Partial result of multiplicatio to accumulator input
-    wire [63:0] acumulated_result_s;
+    wire [47:0] partial_result_1_s;     // Partial result of multiplicatio to accumulator input
+    wire [47:0] acumulated_result_s;
 
 
-    wire [31:0] sum_s;
-    wire [1:0] carries_s;
-    reg  [63:0] pipe_S3_AC_s;                 // Accumulator value
+    reg  [47:0] pipe_S3_AC_s;                 // Accumulator value
     reg         pipe_S3_done_s;
     reg         pipe_S3_pipe_en_s;
+    reg  [15:0] pipe_S3_answr_low_s;
 
     
 
@@ -215,30 +207,15 @@ module multiplier_DP (
         endcase
     end
 
-    // assign M0_mux_s = (reg_upper_s) ? A0_x_B0_sft_s[63:32] : A0_x_B0_sft_s[31:0];
-    // assign M1_mux_s = (reg_upper_s) ? A1_x_B1_sft_s[63:32] : A1_x_B1_sft_s[31:0];
-
-
-    // Co_detector_V6 LOW_MULT_CO_inst (
-    //     .A_i  ( A0_x_B0_sft_s[31:0] ),
-    //     .B_i  ( A1_x_B1_sft_s[31:0] ),
-    //     .Co_o ( detect_co_s ) 
-    // );
-
-    //assign low_mul_co_s = (reg_upper_s) ? detect_co_s : 1'b0;
-
-
-    // Adders tree (2 layers + AC adder)
-    
-    //assign partial_result_1_s = M0_mux_s + M1_mux_s;
-    assign partial_result_1_s = A0_x_B0_sft_s + A1_x_B1_sft_s;
+     
+    assign partial_result_1_s = A0_x_B0_sft_s[63:16] + A1_x_B1_sft_s[63:16];
 
     assign acumulated_result_s = partial_result_1_s + pipe_S3_AC_s;
 
     // Accumulator
     always@(posedge clk_i, posedge rst_i) begin
         if (rst_i) begin
-            pipe_S3_AC_s <= 63'h0000000000000000;
+            pipe_S3_AC_s <= 48'h000000000000;
         end
         else if (pipe_S2_AC_en_s) begin
             pipe_S3_AC_s <= acumulated_result_s;
@@ -256,7 +233,20 @@ module multiplier_DP (
         end
     end
 
-    assign result_o = reg_upper_s ? pipe_S3_AC_s[63:32] : pipe_S3_AC_s[31:0];
+    always@(posedge clk_i, posedge rst_i) begin
+        if (rst_i) begin
+            pipe_S3_answr_low_s <= 16'h0000; 
+        end
+        else if (!pipe_S2_shift_amount_s && pipe_S3_pipe_en_s) begin
+            pipe_S3_answr_low_s <= A0_x_B0_sft_s[15:0];
+        end
+    end
+
+    wire [63:0] final_full_answer_s;
+    assign final_full_answer_s = {pipe_S3_AC_s, pipe_S3_answr_low_s};
+    
+
+    assign result_o = reg_upper_s ? final_full_answer_s[63:32] : final_full_answer_s[31:0];
     assign done_o = pipe_S3_done_s;
 
 endmodule

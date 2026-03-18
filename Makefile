@@ -1,5 +1,5 @@
 export ROOT       = $(CURDIR)
-export DESIGN_    = multiplier_top_V6
+export DESIGN_    = multiplier_top
 export FREQ_MHZ   ?= 200
 export OP_CORNER  ?= slow
        RTL_DIR    = ${ROOT}/src
@@ -33,20 +33,13 @@ Mult_xcelium:
 		xrun -v2001 ${RTL_DIR}/mult.v ${TESTS_DIR}/mult_tb.sv $(FLAGS); \
 	fi
 
-Co_detector_xcelium:
-	cd ${ROOT}/synthesis/work && \
-	if [ "$(TB)" = "0" ]; then \
-		xrun -v2001 ${RTL_DIR}/Co_detector.v $(FLAGS); \
-	else \
-		xrun -v2001 ${RTL_DIR}/Co_detector.v ${TESTS_DIR}/Co_detector_tb.sv $(FLAGS); \
-	fi
 
 Multiplier_xcelium:
 	cd ${ROOT}/synthesis/work && \
 	if [ "$(TB)" = "0" ]; then \
-		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/Co_detector.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v $(FLAGS); \
+		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v $(FLAGS); \
 	else \
-		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/mult.v  ${RTL_DIR}/Co_detector.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v ${TESTS_DIR}/multiplier_tb.sv $(FLAGS); \
+		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/mult.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v ${TESTS_DIR}/multiplier_tb.sv $(FLAGS); \
 	fi
 
 Run_Logical_Synth:

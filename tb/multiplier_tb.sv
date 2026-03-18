@@ -2,7 +2,7 @@ module multiplier_tb;
 
     localparam CLK_PERIOD = 10;
     localparam STAGES = 5;
-    localparam TESTS_NUM = 50;
+    localparam TESTS_NUM = 5000;
 
     logic clk, rst, sigA, sigB, upper, done, mult_on;
     logic [31:0] A_op, B_op, answer;
