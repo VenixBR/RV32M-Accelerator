@@ -1,2 +1,0 @@
-### run netlist (logic synthesis) with compiled SDF
-xmsdfc -iocondsort -compile ${PROJECT_DIR}/backend/synthesis/deliverables/${DESIGNS}_worst.sdf & xrun -timescale 1ns/10ps -mess -64bit -v200x -v93 -noneg_tchk ${TECH_DIR}/gsclib045_all_v4.4/gsclib045/ verilog/slow_vdd1v0_basicCells.v ${PROJECT_DIR}/backend/synthesis/deliverables/${DESIGNS}.v Util_package.vhd ${DESIGNS}_tb.vhd -top ${DESIGNS}_tb -access +rwc -sdf_cmd_file ${PROJECT_DIR}/frontend/ sdf_cmd_file.cmd -gui

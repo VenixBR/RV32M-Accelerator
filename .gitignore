@@ -1,8 +1,8 @@
-Synthesis/work/*
-!Synthesis/work/.gitkeep
+synthesis/work/*
+!synthesis/work/.gitkeep
 
-Synthesis/reports/*
-!Synthesis/reports/.gitkeep
+synthesis/outputs/reports/*
+!synthesis/outputs/reports/.gitkeep
 
-Synthesis/deliverables/*
-!Synthesis/deliverables/.gitkeep
+synthesis/outputs/deliverables/*
+!synthesis/outputs/deliverables/.gitkeep
