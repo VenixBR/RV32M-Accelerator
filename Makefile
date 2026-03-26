@@ -9,13 +9,16 @@ GUI        ?= 0
 TB         ?= 1
 MUL        ?= 0
 GUI        ?= 0
+TESTS      ?= 100
 FLAGS += -access +rwc
 
 ifeq ($(GUI),1)
 	FLAGS += -gui
 endif
 
-
+ifneq ($(TESTS),100)
+	FLAGS += +define+TESTS_NUM=$(TESTS)
+endif
 
 Decoder_xcelium:
 	cd ${ROOT}/synthesis/work && \

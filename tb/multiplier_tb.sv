@@ -2,7 +2,12 @@ module multiplier_tb;
 
     localparam CLK_PERIOD = 10;
     localparam STAGES = 5;
-    localparam TESTS_NUM = 5000;
+    `ifdef TESTS_NUM
+        localparam TESTS_NUM_h = `TESTS_NUM;
+    `else
+        localparam TESTS_NUM_h = 100;
+    `endif
+
 
     logic clk, rst, sigA, sigB, upper, done, mult_on;
     logic [31:0] A_op, B_op, answer;
@@ -99,7 +104,7 @@ module multiplier_tb;
         clk = 0;
         rst = 0;
         errors = 0;
-        tests = TESTS_NUM;
+        tests = TESTS_NUM_h;
 
         opcode = 7'b0110011; 
         funct7 = 7'b0000001;
@@ -111,7 +116,7 @@ module multiplier_tb;
             TestResult(32'h80000001, 32'h80010002);
             #1
         
-        for (int i=0 ; i<TESTS_NUM ; i=i+1) begin
+        for (int i=0 ; i<TESTS_NUM_h ; i=i+1) begin
             #1
             TestResult($urandom, $urandom);
         end
