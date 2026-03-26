@@ -95,6 +95,7 @@ module multiplier_DP (
     reg         pipe_S3_pipe_en_s;
     reg  [15:0] pipe_S3_answr_low_s;
 
+wire [63:0] final_full_answer_s;
     
 
     // B Signed extension mux
@@ -212,13 +213,17 @@ module multiplier_DP (
 
     assign acumulated_result_s = partial_result_1_s + pipe_S3_AC_s;
 
+    reg [31:0] answer;
+
     // Accumulator
     always@(posedge clk_i, posedge rst_i) begin
         if (rst_i) begin
             pipe_S3_AC_s <= 48'h000000000000;
+            answer <= 32'h00000000;
         end
         else if (pipe_S2_AC_en_s) begin
             pipe_S3_AC_s <= acumulated_result_s;
+            answer <= (reg_upper_s) ? final_full_answer_s[63:32] : final_full_answer_s[31:0];  
         end
     end
 
@@ -242,11 +247,13 @@ module multiplier_DP (
         end
     end
 
-    wire [63:0] final_full_answer_s;
-    assign final_full_answer_s = {pipe_S3_AC_s, pipe_S3_answr_low_s};
+    
+    //assign final_full_answer_s = {pipe_S3_AC_s, pipe_S3_answr_low_s};
+    assign final_full_answer_s = {acumulated_result_s, pipe_S3_answr_low_s};
     
 
-    assign result_o = reg_upper_s ? final_full_answer_s[63:32] : final_full_answer_s[31:0];
+    //assign result_o = reg_upper_s ? final_full_answer_s[63:32] : final_full_answer_s[31:0];
+    assign result_o = answer;
     assign done_o = pipe_S3_done_s;
 
 endmodule
