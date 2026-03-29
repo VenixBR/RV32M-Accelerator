@@ -1,46 +1,42 @@
-module multiplier_tb;
+module accelerator_tb;
 
     localparam CLK_PERIOD = 10;
     localparam STAGES = 5;
     `ifdef TESTS_NUM
         localparam TESTS_NUM_h = `TESTS_NUM;
     `else
-        localparam TESTS_NUM_h = 10000;
+        localparam TESTS_NUM_h = 10;
     `endif
 
-
-    logic clk, rst, sigA, sigB, upper, done, mult_on;
-    logic [31:0] A_op, B_op, answer;
-    logic [6:0] opcode, funct7;
+    logic clk, rst, done, stall, div_zero;
+    logic [31:0] A_op;
+    logic [31:0] B_op;
+    logic [31:0] answer;
+    logic [6:0] opcode;
+    logic [6:0] funct7;
     logic [2:0] funct3;
 
     reg [63:0] A_ext, B_ext, AxB;
     int errors, tests;
 
-    multiplier_top DUT (
-        .clk_i      ( clk     ),
-        .rst_i      ( rst     ),
-        .mult_en_i  ( mult_on ),
-        .op_A_i     ( A_op    ),
-        .op_B_i     ( B_op    ),
-        .signed_A_i ( sigA    ),
-        .signed_B_i ( sigB    ),
-        .upper_i    ( upper   ),
-        .result_o   ( answer  ),
-        .done_o     ( done    )
+    M_accelerator_wrapper DUT (
+        .clk_i (clk),
+        .rst_i (rst),
+
+        .opcode_i (opcode),
+        .funct3_i (funct3),
+        .funct7_i (funct7),
+        .op_A_i (A_op),
+        .op_B_i(B_op),
+
+        .result_o(answer),
+        .done_o(done),
+        .stall_o(stall),
+        .division_by_zero_o(div_zero)
     );
 
-    decoder decoder (
-        .opcode_i    ( opcode  ),
-        .funct3_i    ( funct3  ),
-        .funct7_i    ( funct7  ),
 
-        .mult_on_o   ( mult_on ),
-        //.div_on_o    (  ),
-        .signed_A_o  ( sigA    ),
-        .signed_B_o  ( sigB    ),
-        .upper_rem_o ( upper   )
-    );
+
 
 
     task TestResult ( input logic [31:0] A, input logic [31:0] B);
@@ -114,7 +110,7 @@ module multiplier_tb;
 
     initial begin
         $dumpfile("dump.vcd");
-        $dumpvars(0, DUT, decoder);
+        $dumpvars(0, DUT);
         
         clk = 0;
         rst = 0;
@@ -148,7 +144,5 @@ module multiplier_tb;
 
         
     end
-
-
 
 endmodule

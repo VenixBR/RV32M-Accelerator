@@ -1,11 +1,10 @@
-module biriscv_divider
+module divider
 (
     // Clocks e Resets
      input           clk_i
     ,input           rst_i
     
     // Controle vindo do Decoder
-    ,input           opcode_valid_i // Sinal de trigger geral
     ,input           div_on_i       // Habilita o divisor
     ,input           signed_A_i     // Operando A é com sinal?
     ,input           signed_B_i     // Operando B é com sinal?
@@ -52,7 +51,7 @@ reg [31:0] saved_op_b_abs_q;
 // Lógica de Controle Inicial
 //-------------------------------------------------------------
 // O divisor só inicia se a instrução for válida E o decoder autorizar
-wire div_start_w    = opcode_valid_i & div_on_i;
+wire div_start_w    =  div_on_i;
 
 wire div_complete_w = (!(|q_mask_q) || !(|dividend_q))
                     & div_busy_q 

@@ -8,6 +8,8 @@ module multiplier_CP (
     output reg       reg_A_en_o,      // enable of register of operand A
     output reg       reg_B_en_o,      // enable of register of operand B
     output reg       AC_en_o,         // enable of result accumulator
+    output reg       en_outputs_o,
+    output reg       rst_internal_o,  //
     output reg       en_pipe_o,       // enable of pipeline registers
     output reg       mux_B_sel_o,     // mux selector of operand B
     output reg       shift_amount_o,  // shift amount to multiplier results
@@ -15,10 +17,10 @@ module multiplier_CP (
 );
 
     // Stages codification
-    localparam INIT   = 3'b00;
-    localparam MULT_1 = 3'b01;
-    localparam MULT_2 = 3'b11;
-    localparam DONE   = 3'b10;
+    localparam INIT   = 2'b00;
+    localparam MULT_1 = 2'b01;
+    localparam MULT_2 = 2'b11;
+    localparam DONE   = 2'b10;
 
     // SIGNALS 
     reg [1:0] Current_State_s;
@@ -31,7 +33,7 @@ module multiplier_CP (
             INIT    : begin Next_State_s = (mult_en_i) ? MULT_1 : INIT; end
             MULT_1  : begin Next_State_s = MULT_2; end
             MULT_2  : begin Next_State_s = DONE; end
-            DONE    : begin Next_State_s = DONE; end
+            DONE    : begin Next_State_s = INIT; end
         endcase
     end
 
@@ -40,7 +42,7 @@ module multiplier_CP (
         if (rst_i) begin
             Current_State_s <= INIT;
         end
-        else if ( mult_en_i ) begin
+        else begin
             Current_State_s <= Next_State_s;
         end
     end
@@ -57,6 +59,7 @@ module multiplier_CP (
                 mux_B_sel_o    = 1'b0;
                 shift_amount_o = 1'b0;
                 done_o         = 1'b0;
+                rst_internal_o = 1'b1;
             end
             MULT_1 : begin
                 reg_A_en_o     = 1'b0;
@@ -64,8 +67,9 @@ module multiplier_CP (
                 AC_en_o        = 1'b1;
                 en_pipe_o      = 1'b1;
                 mux_B_sel_o    = 1'b1;
-                shift_amount_o = 1'b0;
+                shift_amount_o = 1'b1;
                 done_o         = 1'b0;
+                rst_internal_o = 1'b0;
             end
             MULT_2 : begin
                 reg_A_en_o     = 1'b0;
@@ -73,8 +77,9 @@ module multiplier_CP (
                 AC_en_o        = 1'b1;
                 en_pipe_o      = 1'b1;
                 mux_B_sel_o    = 1'b0;
-                shift_amount_o = 1'b1;
+                shift_amount_o = 1'b0;
                 done_o         = 1'b0;
+                rst_internal_o = 1'b0;
             end
             DONE : begin
                 reg_A_en_o     = 1'b0;
@@ -84,6 +89,7 @@ module multiplier_CP (
                 mux_B_sel_o    = 1'b0;
                 shift_amount_o = 1'b0;
                 done_o         = 1'b1;
+                rst_internal_o = 1'b0;
             end
         endcase
     end

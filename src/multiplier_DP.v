@@ -10,6 +10,7 @@ module multiplier_DP (
     // Control Signals
     input wire       reg_A_en_i,      // enable of register of operand A
     input wire       reg_B_en_i,      // enable of register of operand B
+    input wire       rst_internal_i,
     input wire       AC_en_i,         // enable of result accumulator
     input wire       en_pipe_i,       // enable of pipeline registers
     input wire       mux_B_sel_i,     // mux selector of operand B
@@ -29,6 +30,7 @@ module multiplier_DP (
     reg         reg_upper_s;          // Input register to signal upper_i
     reg         reg_sigA_s;           // Input register to signal signed_A_i
     reg  [1:0]  reg_sigB_s;           // Input register to signal signed_B_i
+    reg         reg_rst_int_s;           // Input register to signal rst_internal_i
 
     wire [31:0] mux_B_s;              // Output of mux to left rotate input
     wire [3:0]  mux_sigB_s;           // Output of mux to sigB reg
@@ -70,6 +72,7 @@ module multiplier_DP (
     reg         pipe_S2_pipe_en_s;
     reg         pipe_S2_done_s;
     reg         pipe_S2_AC_en_s;
+    reg         pipe_S2_rst_int_s;
     
 
     wire [32:0] A0_x_B0_ext_s [31:0];        // Extends the signal of the A0 x B0 to 64 bits
@@ -94,6 +97,7 @@ module multiplier_DP (
     reg         pipe_S3_done_s;
     reg         pipe_S3_pipe_en_s;
     reg  [15:0] pipe_S3_answr_low_s;
+    reg         pipe_S3_rst_int_s;
 
 wire [63:0] final_full_answer_s;
     
@@ -111,8 +115,12 @@ wire [63:0] final_full_answer_s;
             reg_B_s           <= 32'h00000000;
             reg_upper_s       <= 1'b0;
             reg_sigA_s        <= 1'b0;
+            reg_rst_int_s     <= 1'b0;
         end
         else begin
+
+            reg_rst_int_s <= rst_internal_i;
+
             if (reg_A_en_i) begin
                 reg_A_s           <= op_A_i;
                 reg_upper_s       <= upper_i;
@@ -129,17 +137,20 @@ wire [63:0] final_full_answer_s;
     reg pipe_S1_AC_en_s;
     reg pipe_S1_shift_amount_s;
     reg pipe_S1_en_pipe_s;
+    reg pipe_S1_rst_int_s;
 
     always@(posedge clk_i, posedge rst_i) begin
         if (rst_i)begin
             pipe_S1_AC_en_s        <= 1'b0;
             pipe_S1_shift_amount_s <= 1'b0;
             pipe_S1_en_pipe_s      <= 1'b1;
+            pipe_S1_rst_int_s      <= 1'b0;
         end
         else if (pipe_S3_pipe_en_s) begin
             pipe_S1_AC_en_s        <= AC_en_i;
             pipe_S1_shift_amount_s <= shift_amount_i;
             pipe_S1_en_pipe_s      <= en_pipe_i;
+            pipe_S1_rst_int_s      <= rst_internal_i;
         end
     end
     
@@ -178,6 +189,7 @@ wire [63:0] final_full_answer_s;
             pipe_S2_shift_amount_s <= 1'b0;
             pipe_S2_pipe_en_s <= 1'b1;
             pipe_S2_done_s <= 1'b0;
+            pipe_S2_rst_int_s <= pipe_S1_rst_int_s;
         end
         else if ( pipe_S3_pipe_en_s ) begin
             pipe_S2_A0xB0_s   <= temp_mult1;
@@ -186,6 +198,7 @@ wire [63:0] final_full_answer_s;
             pipe_S2_shift_amount_s <= pipe_S1_shift_amount_s;
             pipe_S2_done_s <= done_i;
             pipe_S2_pipe_en_s <= pipe_S1_en_pipe_s;
+            pipe_S2_rst_int_s <= pipe_S1_rst_int_s;
         end
     end
 
@@ -196,7 +209,7 @@ wire [63:0] final_full_answer_s;
 
     // SHIFTERS
     always@* begin
-        case (pipe_S2_shift_amount_s)
+        case (!pipe_S2_shift_amount_s)
             1'b0 : begin
                 A0_x_B0_sft_s = A0_x_B0_64_s;
                 A1_x_B1_sft_s = A1_x_B1_64_s << 32;
@@ -217,24 +230,39 @@ wire [63:0] final_full_answer_s;
 
     // Accumulator
     always@(posedge clk_i, posedge rst_i) begin
-        if (rst_i) begin
+        if (rst_i || rst_internal_i) begin
             pipe_S3_AC_s <= 48'h000000000000;
-            answer <= 32'h00000000;
         end
         else if (pipe_S2_AC_en_s) begin
             pipe_S3_AC_s <= acumulated_result_s;
-            answer <= (reg_upper_s) ? final_full_answer_s[63:32] : final_full_answer_s[31:0];  
         end
     end
 
     always@(posedge clk_i, posedge rst_i) begin
-        if (rst_i) begin
-            pipe_S3_done_s <= 1'b0;
+        if (rst_i ) begin
+            answer <= 32'h00000000;
+        end
+        else if (pipe_S2_AC_en_s) begin
+            answer <= (reg_upper_s) ? final_full_answer_s[63:32] : final_full_answer_s[31:0];  
+        end
+    end
+
+
+    always@(posedge clk_i, posedge rst_i) begin
+        if (rst_i || pipe_S2_rst_int_s) begin
             pipe_S3_pipe_en_s <= 1'b1;
         end
         else if (pipe_S3_pipe_en_s) begin
-            pipe_S3_done_s <= pipe_S2_done_s;
             pipe_S3_pipe_en_s <= pipe_S2_pipe_en_s;
+        end
+    end
+
+    always@(posedge clk_i, posedge rst_i) begin
+        if (rst_i || shift_amount_i) begin
+            pipe_S3_done_s <= 1'b0;
+        end
+        else if (pipe_S2_AC_en_s) begin
+            pipe_S3_done_s <= pipe_S2_done_s;
         end
     end
 
@@ -242,7 +270,7 @@ wire [63:0] final_full_answer_s;
         if (rst_i) begin
             pipe_S3_answr_low_s <= 16'h0000; 
         end
-        else if (!pipe_S2_shift_amount_s && pipe_S3_pipe_en_s) begin
+        else if (pipe_S2_shift_amount_s && pipe_S3_pipe_en_s) begin
             pipe_S3_answr_low_s <= A0_x_B0_sft_s[15:0];
         end
     end
