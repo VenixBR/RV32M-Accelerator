@@ -1,15 +1,15 @@
 module multiplier
 (
     // Inputs
-    input           clk_i,
-    input           rst_i,
-    input           en_pipe_i,
-    input  [ 15:0]  A_i,
-    input  [ 15:0]  B_i,
+    input          clk_i,
+    input          rst_i,
+    input          en_pipe_i,
+    input  [15:0]  A_i,
+    input  [15:0]  B_i,
     input sigA_i,
     input sigB_i,
     // Outputs
-    output [ 32:0]  writeback_value_o
+    output [32:0]  result_o
 );
 
     wire [3:0] A3_s;
@@ -201,7 +201,7 @@ module multiplier
     assign A3B2_sft_s = A3B2_ext_s<<20;
     assign A3B3_sft_s = A3B3_ext_s<<24;
 
-    assign writeback_value_o = {A0B0_sft_s[32:4] + A0B1_sft_s[32:4] + A0B2_sft_s[32:4] + A0B3_sft_s[32:4] +
+    assign result_o = {A0B0_sft_s[32:4] + A0B1_sft_s[32:4] + A0B2_sft_s[32:4] + A0B3_sft_s[32:4] +
                                A1B0_sft_s[32:4] + A1B1_sft_s[32:4] + A1B2_sft_s[32:4] + A1B3_sft_s[32:4] +
                                A2B0_sft_s[32:4] + A2B1_sft_s[32:4] + A2B2_sft_s[32:4] + A2B3_sft_s[32:4] +
                                A3B0_sft_s[32:4] + A3B1_sft_s[32:4] + A3B2_sft_s[32:4] + A3B3_sft_s[32:4], A0B0_sft_s[3:0]};

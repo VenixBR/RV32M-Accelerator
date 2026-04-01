@@ -130,10 +130,11 @@ module multiplier_tb;
         $display(  "| Instruction |  Expected  |   Answer   | Error | Time");
         $display(  "+-------------+------------+------------+-------+---------");
         #1
-            // TestResult(32'h80000001, 32'h80010002);
-            // #1
+            TestResult(32'h80000001, 32'h80010002);
+            #1
         
         for (int i=0 ; i<TESTS_NUM_h ; i=i+1) begin
+        tests = tests+1;
             #1
             TestResult($urandom, $urandom);
         end

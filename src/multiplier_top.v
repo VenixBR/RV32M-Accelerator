@@ -31,9 +31,10 @@ module multiplier_top (
 );
 
     // Interconnect signals
-    wire       reg_A_en_s;
+    wire       init_s;
     wire       reg_B_en_s;
     wire       AC_en_s;
+    wire       rst_AC_s;
     wire       rst_internal_s;
     wire       en_pipe_s;
     wire       mux_B_sel_s;
@@ -48,14 +49,13 @@ module multiplier_top (
         .mult_en_i      ( mult_en_i      ),
 
         // OUTPUTS
-        .reg_A_en_o     ( reg_A_en_s     ),
+        .init_o         ( init_s         ),
         .reg_B_en_o     ( reg_B_en_s     ),
         .AC_en_o        ( AC_en_s        ),
+        .rst_AC_o       ( rst_AC_s       ),
         .en_pipe_o      ( en_pipe_s      ),
-        .rst_internal_o ( rst_internal_s ),
-        .mux_B_sel_o    ( mux_B_sel_s    ),
         .shift_amount_o ( shift_amount_s ),
-        .done_o         ( done_s         )
+        .done_o         ( done_o         )
     );
 
     multiplier_DP MULT_DP_inst ( 
@@ -64,20 +64,16 @@ module multiplier_top (
         .rst_i          ( rst_i          ),
         .signed_A_i     ( signed_A_i     ),
         .signed_B_i     ( signed_B_i     ),
-        .done_i         ( done_s         ),
         .upper_i        ( upper_i        ),
         .op_A_i         ( op_A_i         ),
-        .rst_internal_i ( rst_internal_s ),
         .op_B_i         ( op_B_i         ),
-        .reg_A_en_i     ( reg_A_en_s     ),
+        .init_i         ( init_s         ),
         .reg_B_en_i     ( reg_B_en_s     ),
         .AC_en_i        ( AC_en_s        ),
+        .rst_AC_i       ( rst_AC_s       ),
         .en_pipe_i      ( en_pipe_s      ),
-        .mux_B_sel_i    ( mux_B_sel_s    ),
         .shift_amount_i ( shift_amount_s ),
-
         // Outputs
-        .done_o         ( done_o         ),
         .result_o       ( result_o       )
     );
 

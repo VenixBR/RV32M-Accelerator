@@ -5,26 +5,25 @@ module multiplier_CP (
     input wire mult_en_i,             // Enable of the multiplier
 
     // OUTPUTS
-    output reg       reg_A_en_o,      // enable of register of operand A
+    output reg       init_o,      // enable of register of operand A
     output reg       reg_B_en_o,      // enable of register of operand B
     output reg       AC_en_o,         // enable of result accumulator
-    output reg       en_outputs_o,
-    output reg       rst_internal_o,  //
     output reg       en_pipe_o,       // enable of pipeline registers
-    output reg       mux_B_sel_o,     // mux selector of operand B
     output reg       shift_amount_o,  // shift amount to multiplier results
+    output reg       rst_AC_o,
     output reg       done_o           // indicates when the operation ends
 );
 
     // Stages codification
-    localparam INIT   = 2'b00;
-    localparam MULT_1 = 2'b01;
-    localparam MULT_2 = 2'b11;
-    localparam DONE   = 2'b10;
+    localparam INIT   = 3'b000;
+    localparam MULT_1 = 3'b001;
+    localparam MULT_2 = 3'b011;
+    localparam WAIT   = 3'b010;
+    localparam DONE   = 3'b110;
 
     // SIGNALS 
-    reg [1:0] Current_State_s;
-    reg [1:0] Next_State_s;
+    reg [2:0] Current_State_s;
+    reg [2:0] Next_State_s;
 
 
     // NEXT STAGE LOGIC
@@ -32,7 +31,8 @@ module multiplier_CP (
         case(Current_State_s)
             INIT    : begin Next_State_s = (mult_en_i) ? MULT_1 : INIT; end
             MULT_1  : begin Next_State_s = MULT_2; end
-            MULT_2  : begin Next_State_s = DONE; end
+            MULT_2  : begin Next_State_s = WAIT; end
+            WAIT    : begin Next_State_s = DONE; end
             DONE    : begin Next_State_s = INIT; end
         endcase
     end
@@ -52,44 +52,58 @@ module multiplier_CP (
     always@* begin
         case (Current_State_s)
             INIT : begin
-                reg_A_en_o     = 1'b1;
+                init_o         = 1'b1;
                 reg_B_en_o     = 1'b1;
-                AC_en_o        = 1'b0;
-                en_pipe_o      = 1'b1;
-                mux_B_sel_o    = 1'b0;
+                en_pipe_o      = 1'b0;
                 shift_amount_o = 1'b0;
-                done_o         = 1'b0;
-                rst_internal_o = 1'b1;
+                AC_en_o        = 1'b0;
+                rst_AC_o       = 1'b0;
+                done_o         = 1'b1;
             end
             MULT_1 : begin
-                reg_A_en_o     = 1'b0;
+                init_o         = 1'b0;
                 reg_B_en_o     = 1'b1;
-                AC_en_o        = 1'b1;
                 en_pipe_o      = 1'b1;
-                mux_B_sel_o    = 1'b1;
-                shift_amount_o = 1'b1;
+                shift_amount_o = 1'b0;
+                AC_en_o        = 1'b0;
+                rst_AC_o       = 1'b1;
                 done_o         = 1'b0;
-                rst_internal_o = 1'b0;
             end
             MULT_2 : begin
-                reg_A_en_o     = 1'b0;
-                reg_B_en_o     = 1'b0;
-                AC_en_o        = 1'b1;
+                init_o         = 1'b0;
+                reg_B_en_o     = 1'b1;
                 en_pipe_o      = 1'b1;
-                mux_B_sel_o    = 1'b0;
                 shift_amount_o = 1'b0;
+                AC_en_o        = 1'b0;
+                rst_AC_o       = 1'b0;
                 done_o         = 1'b0;
-                rst_internal_o = 1'b0;
+            end
+            WAIT : begin
+                init_o         = 1'b0;
+                reg_B_en_o     = 1'b0;
+                en_pipe_o      = 1'b1;
+                shift_amount_o = 1'b1;
+                AC_en_o        = 1'b1;
+                rst_AC_o       = 1'b0;
+                done_o         = 1'b0;
             end
             DONE : begin
-                reg_A_en_o     = 1'b0;
+                init_o         = 1'b0;
                 reg_B_en_o     = 1'b0;
-                AC_en_o        = 1'b0;
-                en_pipe_o      = 1'b0;
-                mux_B_sel_o    = 1'b0;
+                en_pipe_o      = 1'b1;
                 shift_amount_o = 1'b0;
-                done_o         = 1'b1;
-                rst_internal_o = 1'b0;
+                AC_en_o        = 1'b1;
+                rst_AC_o       = 1'b0;
+                done_o         = 1'b0;
+            end
+            default : begin
+                init_o         = 1'b0;
+                reg_B_en_o     = 1'b0;
+                en_pipe_o      = 1'b0;
+                shift_amount_o = 1'b0;
+                AC_en_o        = 1'b0;
+                rst_AC_o       = 1'b0;
+                done_o         = 1'b0;
             end
         endcase
     end

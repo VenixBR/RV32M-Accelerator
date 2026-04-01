@@ -1,7 +1,7 @@
-${RTL_DIR}/mult.v
-${RTL_DIR}/multiplier_DP.v
-${RTL_DIR}/multiplier_CP.v
-${RTL_DIR}/multiplier_top.v
-${RTL_DIR}/divider.v
-${RTL_DIR}/decoder.v
-${RTL_DIR}/M_accelerator_wrapper.v
+mult.v
+multiplier_DP.v
+multiplier_CP.v
+multiplier_top.v
+divider.v
+decoder.v
+M_accelerator_wrapper.v
