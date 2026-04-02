@@ -9,15 +9,15 @@ GUI        ?= 0
 TB         ?= 1
 MUL        ?= 0
 GUI        ?= 0
-TESTS      ?= 100
-FLAGS_X += -access +rwc
+TESTS      ?= 16
+FLAGS_X += -access +rwc +define+TB
 FLAGS_I += -g2012 -o testbench
 
 ifeq ($(GUI),1)
 	FLAGS_X += -gui
 endif
 
-ifneq ($(TESTS),100)
+ifneq ($(TESTS),16)
 	FLAGS_X += +define+TESTS_NUM=$(TESTS)
 	FLAGS_I += -DTESTS_NUM=${TESTS}
 endif

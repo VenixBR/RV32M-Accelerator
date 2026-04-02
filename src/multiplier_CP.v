@@ -108,4 +108,18 @@ module multiplier_CP (
         endcase
     end
 
+    `ifdef TB
+        reg [47:0] CurrentState_ASCII;
+        always@* begin
+            case (Current_State_s)
+                INIT   : begin CurrentState_ASCII = 48'h49_4E_49_54;end
+                MULT_1 : begin CurrentState_ASCII = 48'h4D_55_4C_54_5F_31;end
+                MULT_2 : begin CurrentState_ASCII = 48'h4D_55_4C_54_5F_32;end
+                WAIT   : begin CurrentState_ASCII = 48'h57_41_49_54;end
+                DONE   : begin CurrentState_ASCII = 48'h44_4F_4E_45;end
+                default : begin CurrentState_ASCII = 48'h4E_55_4C_4C;end
+            endcase
+        end
+    `endif
+
 endmodule
