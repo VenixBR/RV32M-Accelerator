@@ -59,7 +59,7 @@ module multiplier_tb;
             AxB = A_ext * B_ext;
             #(CLK_PERIOD)
             opcode = 7'b0110010; 
-            @(posedge done)
+            @(negedge done)
             #((9*CLK_PERIOD)/10)
             errors = (AxB[31:0]==answer) ? errors : errors+1;
             tests = tests + 1;
@@ -76,7 +76,7 @@ module multiplier_tb;
             AxB = A_ext * B_ext;
             #(CLK_PERIOD)
             opcode = 7'b0110010; 
-            @(posedge done)
+            @(negedge done)
             #((9*CLK_PERIOD)/10)
             errors = (AxB[63:32]==answer) ? errors : errors+1;
             tests = tests + 1;
@@ -93,7 +93,7 @@ module multiplier_tb;
             AxB = A_ext * B_ext;
             #(CLK_PERIOD)
             opcode = 7'b0110010; 
-            @(posedge done)
+            @(negedge done)
             #((9*CLK_PERIOD)/10)
             errors = (AxB[63:32]==answer) ? errors : errors+1;
             tests = tests + 1;
@@ -110,7 +110,7 @@ module multiplier_tb;
             AxB = A_ext * B_ext;
             #(CLK_PERIOD)
             opcode = 7'b0110010; 
-            @(posedge done)
+            @(negedge done)
             #((9*CLK_PERIOD)/10)
             errors = (AxB[63:32]==answer) ? errors : errors+1;
             tests = tests + 1;

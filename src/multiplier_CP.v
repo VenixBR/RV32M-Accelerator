@@ -58,7 +58,7 @@ module multiplier_CP (
                 shift_amount_o = 1'b0;
                 AC_en_o        = 1'b0;
                 rst_AC_o       = 1'b0;
-                done_o         = 1'b1;
+                done_o         = 1'b0;
             end
             MULT_1 : begin
                 init_o         = 1'b0;
@@ -67,7 +67,7 @@ module multiplier_CP (
                 shift_amount_o = 1'b0;
                 AC_en_o        = 1'b0;
                 rst_AC_o       = 1'b1;
-                done_o         = 1'b0;
+                done_o         = 1'b1;
             end
             MULT_2 : begin
                 init_o         = 1'b0;
@@ -76,7 +76,7 @@ module multiplier_CP (
                 shift_amount_o = 1'b0;
                 AC_en_o        = 1'b0;
                 rst_AC_o       = 1'b0;
-                done_o         = 1'b0;
+                done_o         = 1'b1;
             end
             WAIT : begin
                 init_o         = 1'b0;
@@ -85,7 +85,7 @@ module multiplier_CP (
                 shift_amount_o = 1'b1;
                 AC_en_o        = 1'b1;
                 rst_AC_o       = 1'b0;
-                done_o         = 1'b0;
+                done_o         = 1'b1;
             end
             DONE : begin
                 init_o         = 1'b0;
@@ -94,7 +94,7 @@ module multiplier_CP (
                 shift_amount_o = 1'b0;
                 AC_en_o        = 1'b1;
                 rst_AC_o       = 1'b0;
-                done_o         = 1'b0;
+                done_o         = 1'b1;
             end
             default : begin
                 init_o         = 1'b0;

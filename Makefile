@@ -47,6 +47,14 @@ Multiplier_xcelium:
 		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/mult.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v ${TESTS_DIR}/multiplier_tb.sv $(FLAGS_X); \
 	fi
 
+Accelerator_xcelium:
+	cd ${ROOT}/synthesis/work && \
+	if [ "$(TB)" = "0" ]; then \
+		xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v $(FLAGS_X); \
+	else \
+		xrun -v2001 -f ${RTL_DIR}/filelists/M_accelerator_wrapper_sim.flist ${TESTS_DIR}/accelerator_tb.sv $(FLAGS_X); \
+	fi
+
 Run_Logical_Synth:
 	cd ${ROOT}/synthesis/work && \
 	genus -f $(ROOT)/synthesis/scripts/synth.tcl -overwrite \
