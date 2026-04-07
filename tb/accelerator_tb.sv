@@ -17,7 +17,9 @@ module accelerator_tb;
     logic [2:0] funct3;
 
     reg [63:0] A_ext, B_ext, AxB;
-    int errors, tests;
+    int errors, tests, log_file;
+    int MUL_errors, MULH_errors, MULHU_errors, MULHSU_errors;
+    int DIV_errors, DIVU_errors, REM_errors, REMU_errors;
     logic [7:0] Instructions;
     string errors_log;
 
@@ -58,11 +60,13 @@ module accelerator_tb;
             @(negedge done)
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
-                errors_log = {errors_log, $sformatf("\n|    [%0d] Error in MUL at time %0d", errors+1, $time)};
+                errors_log = {errors_log, $sformatf("\n|       [%0d] Error in MUL at time %0d", errors+1, $time)};
                 errors = errors+1;
+                MUL_errors = MUL_errors+1;
             end
             tests = tests + 1;
-            $display(  "| MUL         | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A,B,AxB[31:0] ,answer, (AxB[31:0]==answer ? "     " : "ERROR"), $time );
+            $fdisplay(log_file,  "| MUL         | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A,B,AxB[31:0] ,answer, (AxB[31:0]==answer ? "     " : "ERROR"), $time );
+
         end
 
         // MULH
@@ -78,11 +82,12 @@ module accelerator_tb;
             @(negedge done)
             #((9*CLK_PERIOD)/10)
             if (AxB[63:32]!=answer) begin
-                errors_log = {errors_log, $sformatf("\n|    [%0d] Error in MULH at time %0d", errors+1, $time)};
+                errors_log = {errors_log, $sformatf("\n|       [%0d] Error in MULH at time %0d", errors+1, $time)};
                 errors = errors+1;
+                MULH_errors = MULH_errors+1;
             end
             tests = tests + 1;
-            $display(  "| MULH        | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A,B,AxB[63:32] ,answer, (AxB[63:32]==answer ? "     " : "ERROR"), $time );
+            $fdisplay(log_file,  "| MULH        | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A,B,AxB[63:32] ,answer, (AxB[63:32]==answer ? "     " : "ERROR"), $time );
         end
 
         // MULHSU
@@ -98,11 +103,12 @@ module accelerator_tb;
             @(negedge done)
             #((9*CLK_PERIOD)/10)
             if (AxB[63:32]!=answer) begin
-                errors_log = {errors_log, $sformatf("\n|    [%0d] Error in MULHSU at time %0d", errors+1, $time)};
+                errors_log = {errors_log, $sformatf("\n|       [%0d] Error in MULHSU at time %0d", errors+1, $time)};
                 errors = errors+1;
+                MULHSU_errors = MULHSU_errors+1;
             end
             tests = tests + 1;
-            $display(  "| MULHSU      | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A,B,AxB[63:32] ,answer, (AxB[63:32]==answer ? "     " : "ERROR"), $time );
+            $fdisplay(log_file,  "| MULHSU      | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A,B,AxB[63:32] ,answer, (AxB[63:32]==answer ? "     " : "ERROR"), $time );
         end
 
         // MULHU
@@ -118,11 +124,12 @@ module accelerator_tb;
             @(negedge done)
             #((9*CLK_PERIOD)/10)
             if (AxB[63:32]!=answer) begin
-                errors_log = {errors_log, $sformatf("\n|    [%0d] Error in MULHU at time %0d", errors+1, $time)};
+                errors_log = {errors_log, $sformatf("\n|       [%0d] Error in MULHU at time %0d", errors+1, $time)};
                 errors = errors+1;
+                MULHU_errors = MULHU_errors+1;
             end
             tests = tests + 1;
-            $display(  "| MULHS       | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A,B,AxB[63:32] ,answer, (AxB[63:32]==answer ? "     " : "ERROR"), $time );  
+            $fdisplay(log_file,  "| MULHU       | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A,B,AxB[63:32] ,answer, (AxB[63:32]==answer ? "     " : "ERROR"), $time );  
         end
 
         // DIV
@@ -138,11 +145,12 @@ module accelerator_tb;
             @(negedge done)
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
-                errors_log = {errors_log, $sformatf("\n|    [%0d] Error in DIV at time %0d", errors+1, $time)};
+                errors_log = {errors_log, $sformatf("\n|       [%0d] Error in DIV at time %0d", errors+1, $time)};
                 errors = errors+1;
+                DIV_errors = DIV_errors+1;
             end
             tests = tests + 1;
-            $display(  "| DIV         | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A,B,AxB[31:0] ,answer, (AxB[31:0]==answer ? "     " : "ERROR"), $time );  
+            $fdisplay(log_file,  "| DIV         | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A,B,AxB[31:0] ,answer, (AxB[31:0]==answer ? "     " : "ERROR"), $time );  
         end
 
         // DIVU
@@ -158,11 +166,12 @@ module accelerator_tb;
             @(negedge done)
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
-                errors_log = {errors_log, $sformatf("\n|    [%0d] Error in DIVU at time %0d", errors+1, $time)};
+                errors_log = {errors_log, $sformatf("\n|       [%0d] Error in DIVU at time %0d", errors+1, $time)};
                 errors = errors+1;
+                DIVU_errors = DIVU_errors+1;
             end
             tests = tests + 1;
-            $display(  "| DIVU        | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A, B, AxB[31:0] ,answer, (AxB[31:0]==answer ? "     " : "ERROR"), $time );  
+            $fdisplay(log_file,  "| DIVU        | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A, B, AxB[31:0] ,answer, (AxB[31:0]==answer ? "     " : "ERROR"), $time );  
         end
 
         // REM
@@ -178,11 +187,12 @@ module accelerator_tb;
             @(negedge done)
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
-                errors_log = {errors_log, $sformatf("\n|    [%0d] Error in REM at time %0d", errors+1, $time)};
+                errors_log = {errors_log, $sformatf("\n|       [%0d] Error in REM at time %0d", errors+1, $time)};
                 errors = errors+1;
+                REM_errors = REM_errors+1;
             end
             tests = tests + 1;
-            $display(  "| REM         | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A, B, AxB[31:0] ,answer, (AxB[31:0]==answer ? "     " : "ERROR"), $time );  
+            $fdisplay(log_file,  "| REM         | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A, B, AxB[31:0] ,answer, (AxB[31:0]==answer ? "     " : "ERROR"), $time );  
         end
 
         // REMU
@@ -198,14 +208,15 @@ module accelerator_tb;
             @(negedge done)
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
-                errors_log = {errors_log, $sformatf("\n|    [%0d] Error in REMU at time %0d", errors+1, $time)};
+                errors_log = {errors_log, $sformatf("\n|       [%0d] Error in REMU at time %0d", errors+1, $time)};
                 errors = errors+1;
+                REMU_errors = REMU_errors+1;
             end
             tests = tests + 1;
-            $display(  "| REMU        | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A,B,AxB[31:0] ,answer, (AxB[31:0]==answer ? "     " : "ERROR"), $time );  
+            $fdisplay(log_file,  "| REMU        | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A,B,AxB[31:0] ,answer, (AxB[31:0]==answer ? "     " : "ERROR"), $time );  
         end
 
-        $display(  "+-------------+------------+------------++------------+------------++-------+---------"); 
+        $fdisplay(log_file,  "+-------------+------------+------------++------------+------------++-------+---------"); 
     endtask
 
     always #(CLK_PERIOD/2) clk <= ~clk;
@@ -214,10 +225,19 @@ module accelerator_tb;
         $dumpfile("dump.vcd");
         $dumpvars(0, DUT);
         
+        log_file = $fopen("Accelerator_tb.log", "w");
         errors_log = "";
         clk = 0;
         rst = 0;
         errors = 0;
+        MUL_errors =0;
+        MULH_errors=0;
+        MULHU_errors=0;
+        MULHSU_errors=0;
+        DIV_errors=0;
+        DIVU_errors=0;
+        REM_errors =0;
+        REMU_errors =0;
         Instructions = 8'b11111111;
         tests = 0;
         
@@ -226,9 +246,10 @@ module accelerator_tb;
         
         #(CLK_PERIOD/2) rst = 1; #(3*CLK_PERIOD/2) rst = 0;
 
-        $display("\n+-------------+------------+------------++------------+------------++-------+---------");
-        $display(  "| INSTRUCTION |  OPERAND A |  OPERAND B ||  EXPECTED  |   ANSWER   || INFO  | TIME");
-        $display(  "+-------------+------------+------------++------------+------------++-------+---------");
+        $fdisplay(log_file, "\n+-------------+------------+------------++------------+------------++-------+---------");
+        $fdisplay(log_file,   "| INSTRUCTION |  OPERAND A |  OPERAND B ||  EXPECTED  |   ANSWER   || INFO  | TIME");
+        $fdisplay(log_file,   "+-------------+------------+------------++------------+------------++-------+---------");
+    
         #1
             // TestResult(32'h80000001, 32'h80010002);
             // #1
@@ -243,11 +264,40 @@ module accelerator_tb;
         end
 
 
-        $display(  "| INSTRUCTION |  OPERAND A |  OPERAND B ||  EXPECTED  |   ANSWER   || INFO  | TIME");
-        $display(  "+-------------+------------+------------++------------+------------++-------+---------");
-        $display(  "| Number of Tests  : %0d", tests);
-        $display(  "| Number of Errors : %0d\n| %s", errors, errors_log);
+        $fdisplay(log_file, "");
+        $display(  "+------------------------------------------------------------------------------------+"); 
+        $display(  "|                                       REPORTS                                      |"); 
+        $display(  "+------------------------------------------------------------------------------------+"); 
+        $display(  "| Number of Tests        : %0d", tests);
+        $display(  "| Total Number of Errors : %0d", errors);
+        $display(  "|");
+        $display(  "|       Errors on MUL    : %0d", MUL_errors);
+        $display(  "|       Errors on MULH   : %0d", MULH_errors);
+        $display(  "|       Errors on MULHSU : %0d", MULHSU_errors);
+        $display(  "|       Errors on MULHU  : %0d", MULHU_errors);
+        $display(  "|       Errors on DIV    : %0d", DIV_errors);
+        $display(  "|       Errors on DIVU   : %0d", DIVU_errors);
+        $display(  "|       Errors on REM    : %0d", REM_errors);
+        $display(  "|       Errors on REMU   : %0d", REMU_errors);
+        $display(  "|");
+        $display(  "| The full report are in log archive.");
         $display(  "+-------------------------------------------------------------------------------------");
+
+        $fdisplay(log_file,   "+------------------------------------------------------------------------------------+"); 
+        $fdisplay(log_file,   "|                                       REPORTS                                      |"); 
+        $fdisplay(log_file,   "+------------------------------------------------------------------------------------+"); 
+        $fdisplay(log_file,   "| Number of Tests        : %0d", tests);
+        $fdisplay(log_file,   "| Total Number of Errors : %0d", errors);
+        $fdisplay(log_file,   "|");
+        $fdisplay(log_file,   "|       Errors on MUL    : %0d", MUL_errors);
+        $fdisplay(log_file,   "|       Errors on MULH   : %0d", MULH_errors);
+        $fdisplay(log_file,   "|       Errors on MULHSU : %0d", MULHSU_errors);
+        $fdisplay(log_file,   "|       Errors on MULHU  : %0d", MULHU_errors);
+        $fdisplay(log_file,   "|       Errors on DIV    : %0d", DIV_errors);
+        $fdisplay(log_file,   "|       Errors on DIVU   : %0d", DIVU_errors);
+        $fdisplay(log_file,   "|       Errors on REM    : %0d", REM_errors);
+        $fdisplay(log_file,   "|       Errors on REMU   : %0d\n| %s", REMU_errors, errors_log);
+        $fdisplay(log_file,   "+-------------------------------------------------------------------------------------");
         $finish;
 
         
