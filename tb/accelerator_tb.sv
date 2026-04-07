@@ -8,7 +8,7 @@ module accelerator_tb;
         localparam TESTS_NUM_h = 16;
     `endif
 
-    logic clk, rst, done, stall, div_zero;
+    logic clk, rst, stall, div_zero;
     logic [31:0] A_op;
     logic [31:0] B_op;
     logic [31:0] answer;
@@ -34,7 +34,6 @@ module accelerator_tb;
         .op_B_i(B_op),
 
         .result_o(answer),
-        .done_o(done),
         .stall_o(stall),
         .division_by_zero_o(div_zero)
     );
@@ -57,7 +56,7 @@ module accelerator_tb;
             AxB = A_ext * B_ext;
             #(CLK_PERIOD)
             opcode = 7'b0110010; 
-            @(negedge done)
+            @(negedge stall)
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in MUL at time %0d", errors+1, $time)};
@@ -79,7 +78,7 @@ module accelerator_tb;
             AxB = A_ext * B_ext;
             #(CLK_PERIOD)
             opcode = 7'b0110010; 
-            @(negedge done)
+            @(negedge stall)
             #((9*CLK_PERIOD)/10)
             if (AxB[63:32]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in MULH at time %0d", errors+1, $time)};
@@ -100,7 +99,7 @@ module accelerator_tb;
             AxB = A_ext * B_ext;
             #(CLK_PERIOD)
             opcode = 7'b0110010; 
-            @(negedge done)
+            @(negedge stall)
             #((9*CLK_PERIOD)/10)
             if (AxB[63:32]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in MULHSU at time %0d", errors+1, $time)};
@@ -121,7 +120,7 @@ module accelerator_tb;
             AxB = A_ext * B_ext;
             #(CLK_PERIOD)
             opcode = 7'b0110010; 
-            @(negedge done)
+            @(negedge stall)
             #((9*CLK_PERIOD)/10)
             if (AxB[63:32]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in MULHU at time %0d", errors+1, $time)};
@@ -142,7 +141,7 @@ module accelerator_tb;
             AxB = $signed(A_op) / $signed(B_op);
             #(CLK_PERIOD)
             opcode = 7'b0110010; 
-            @(negedge done)
+            @(negedge stall)
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in DIV at time %0d", errors+1, $time)};
@@ -163,7 +162,7 @@ module accelerator_tb;
             AxB = A_op / B_op;
             #(CLK_PERIOD)
             opcode = 7'b0110010; 
-            @(negedge done)
+            @(negedge stall)
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in DIVU at time %0d", errors+1, $time)};
@@ -184,7 +183,7 @@ module accelerator_tb;
             AxB = $signed(A_op) % $signed(B_op);
             #(CLK_PERIOD)
             opcode = 7'b0110010; 
-            @(negedge done)
+            @(negedge stall)
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in REM at time %0d", errors+1, $time)};
@@ -205,7 +204,7 @@ module accelerator_tb;
             AxB = A_op % B_op;
             #(CLK_PERIOD)
             opcode = 7'b0110010; 
-            @(negedge done)
+            @(negedge stall)
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in REMU at time %0d", errors+1, $time)};

@@ -15,7 +15,7 @@ module divider
     ,input  [ 31:0]  operand_b_i  
 
     // Outputs
-    ,output          writeback_valid_o
+    ,output          writeback_stall_o
     ,output [ 31:0]  writeback_value_o
     ,output          div_by_zero_o
 );
@@ -250,7 +250,7 @@ if (rst_i)
 else if (div_complete_w)
     wb_result_q <= div_result_r;
 
-assign writeback_valid_o = valid_q;
+assign writeback_stall_o = div_busy_q;
 assign writeback_value_o = wb_result_q;
 assign div_by_zero_o     = valid_q & div_by_zero_q;
 

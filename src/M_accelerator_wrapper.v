@@ -12,7 +12,6 @@ module M_accelerator_wrapper (
     input  wire [31:0] op_B_i,
 
     output wire  [31:0] result_o,
-    output wire  done_o,
     output wire  stall_o,
     output wire  division_by_zero_o
 );
@@ -23,12 +22,10 @@ module M_accelerator_wrapper (
     wire signed_B_s;
     wire upper_rem_s;
 
-    reg stall_s;
-
     wire [31:0] mult_result_s;
-    wire        mult_done_s;
+    wire        mult_stall_s;
     wire [31:0] div_result_s;
-    wire        div_done_s;
+    wire        div_stall_s;
     wire        div_by_zero_s;
 
     wire rst_stall_s;
@@ -63,15 +60,8 @@ module M_accelerator_wrapper (
         .upper_rem_o ( upper_rem_s )
     );
 
-    assign rst_stall_s = rst_i || div_done_s || mult_done_s;
+    assign rst_stall_s = rst_i || div_stall_s || mult_stall_s;
 
-    always@(posedge clk_i, posedge rst_stall_s) begin
-        if(rst_stall_s)
-            stall_s <= 1'b0;
-        else if(div_on_s || mult_on_s)
-            stall_s <= 1'b1;
-    end
-    assign stall_o = stall_s;
 
 
     multiplier_top MULTIPLIER_INST (
@@ -87,7 +77,7 @@ module M_accelerator_wrapper (
 
         // Outputs
         .result_o   ( mult_result_s ),
-        .done_o     ( mult_done_s   )
+        .mul_stall_o ( mult_stall_s  )
     );
 
     divider DIVIDER_INST (
@@ -102,7 +92,7 @@ module M_accelerator_wrapper (
         .operand_b_i ( op_B_i      ),
 
         // Outputs
-        .writeback_valid_o ( div_done_s    ),
+        .writeback_stall_o ( div_stall_s   ),
         .writeback_value_o ( div_result_s  ),
         .div_by_zero_o     ( div_by_zero_s )
     );
@@ -116,7 +106,7 @@ module M_accelerator_wrapper (
 
     assign result_o = (mux_selector_s==1'b1) ? div_result_s : mult_result_s;
     //assign result_o = (mux_selector_s==1'b1) ? mult_result_s : div_result_s;
-    assign done_o = div_done_s || mult_done_s;
+    assign stall_o = div_stall_s || mult_stall_s;
 
 
 endmodule
