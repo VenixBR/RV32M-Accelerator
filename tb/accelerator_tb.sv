@@ -156,7 +156,7 @@ module accelerator_tb;
         // DIVU
         if (Instrs[5] == 1'b1) begin
             #(3*CLK_PERIOD)
-            funct3 = 3'b100;
+            funct3 = 3'b101;
             opcode = 7'b0110011; 
             A_ext = {32'h00000000, A_op};
             B_ext = {32'h00000000, B_op};
@@ -177,7 +177,7 @@ module accelerator_tb;
         // REM
         if (Instrs[6] == 1'b1) begin
             #(3*CLK_PERIOD)
-            funct3 = 3'b100;
+            funct3 = 3'b110;
             opcode = 7'b0110011; 
             A_ext = {32'h00000000, A_op};
             B_ext = {32'h00000000, B_op};
@@ -198,7 +198,7 @@ module accelerator_tb;
         // REMU
         if (Instrs[7] == 1'b1) begin
             #(3*CLK_PERIOD)
-            funct3 = 3'b100;
+            funct3 = 3'b111;
             opcode = 7'b0110011; 
             A_ext = {32'h00000000, A_op};
             B_ext = {32'h00000000, B_op};

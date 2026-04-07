@@ -1,9 +1,12 @@
-module decoder (
-
+module Accelerator_CP (
+    
     // INPUTS
+    input            clk_i,
+    input            rst_i,
     input wire [6:0] opcode_i,
     input wire [2:0] funct3_i,
     input wire [6:0] funct7_i,
+    input wire       done_i,
 
     // OUTPUTS
     output reg mult_on_o,
@@ -13,6 +16,9 @@ module decoder (
     output reg upper_rem_o
 );
 
+
+
+    // CONSTANTS
     localparam opcode_M      = 7'b0110011;
     localparam funct7_M      = 7'b0000001;
     localparam funct3_MUL    = 3'b000;
@@ -24,8 +30,59 @@ module decoder (
     localparam funct3_REM    = 3'b110;
     localparam funct3_REMU   = 3'b111;
 
+    // STATES
+    localparam WAITING = 1'b0;
+    localparam OPERATING = 1'b1;
 
+    // SIGNALS
     reg active_accelerator_s;
+    reg Current_State_s;
+    reg Next_State_s;
+
+
+
+
+
+
+
+    // NEXT STATE LOGIC
+    always@* begin
+        if (opcode_i==opcode_M && funct7_i=funct7_M) begin
+            case (funct3_i)
+                funct3_MUL    : begin mult_on_o=1'b1; div_on_o=1'b0; end;
+                funct3_MULH   : begin mult_on_o=1'b1; div_on_o=1'b0; end;
+                funct3_MULHSU : begin mult_on_o=1'b1; div_on_o=1'b0; end;
+                funct3_MULHU  : begin mult_on_o=1'b1; div_on_o=1'b0; end;
+                funct3_DIV    : begin mult_on_o=1'b0; div_on_o=1'b1; end;
+                funct3_DIVU   : begin mult_on_o=1'b0; div_on_o=1'b1; end;
+                funct3_REM    : begin mult_on_o=1'b0; div_on_o=1'b1; end;
+                funct3_REMU   : begin mult_on_o=1'b0; div_on_o=1'b1; end;
+            endcase
+        end else begin
+            mult_on_o=1'b0;
+            div_on_o=1'b0; 
+        end
+    end
+
+    always@* begin
+        case (Current_State_s)
+            WAITING   : begin Next_State_s = (div_on_o || mult_on_o) ? OPERATING : WAITING end;
+            OPERATING : begin Next_State_s = done_i ? WAITING : OPERATING end; 
+        endcase
+    end
+
+
+
+    // MEMORY LOGIC
+    always@(posedge clk_i, posedge rst_i) begin
+        if(rst_i)
+            Current_State_s <= 1'b0;
+        else
+            Current_State_s <= Next_State_s;
+    end
+
+
+
 
     
     always@* begin
@@ -98,28 +155,5 @@ module decoder (
             end
         endcase
     end
-
-    `ifdef TB
-    reg [39:0] Instruction_ASCII;
-
-    always @* begin
-        if (opcode_i == opcode_M && funct7_i == funct7_M) begin
-            case (funct3_i)
-                funct3_MUL    : Instruction_ASCII = 40'h4D_55_4C_20_20; // "MUL  "
-                funct3_MULH   : Instruction_ASCII = 40'h4D_55_4C_48_20; // "MULH "
-                funct3_MULHU  : Instruction_ASCII = 40'h4D_55_4C_48_55; // "MULHU"
-                funct3_MULHSU : Instruction_ASCII = 40'h4D_55_4C_48_53; // "MULHS"
-                funct3_DIV    : Instruction_ASCII = 40'h44_49_56_20_20; // "DIV  "
-                funct3_DIVU   : Instruction_ASCII = 40'h44_49_56_55_20; // "DIVU "
-                funct3_REM    : Instruction_ASCII = 40'h52_45_4D_20_20; // "REM  "
-                funct3_REMU   : Instruction_ASCII = 40'h52_45_4D_55_20; // "REMU "
-                default       : Instruction_ASCII = 40'h2D_20_2D_20_20; // "- -  "
-            endcase
-        end 
-        else begin
-            Instruction_ASCII = 40'h2D_20_2D_20_20;
-        end
-    end
-`endif
 
 endmodule
