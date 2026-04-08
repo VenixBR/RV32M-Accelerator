@@ -28,7 +28,7 @@ module multiplier_tb;
         .signed_B_i ( sigB    ),
         .upper_i    ( upper   ),
         .result_o   ( answer  ),
-        .done_o     ( done    )
+        .stall_o     ( done    )
     );
 
     decoder decoder (

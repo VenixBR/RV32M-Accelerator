@@ -26,15 +26,13 @@ module M_accelerator_wrapper (
     wire        mult_stall_s;
     wire [31:0] div_result_s;
     wire        div_stall_s;
-    wire        div_by_zero_s;
-
-    wire rst_stall_s;
 
     wire mult_clk_s;
     wire div_clk_s;
     wire core_clk_s;
 
     reg mux_selector_s;
+    wire stall_s;
 
 
     // clock_divider CLOCK_DIVIDER_INST (
@@ -60,9 +58,6 @@ module M_accelerator_wrapper (
         .upper_rem_o ( upper_rem_s )
     );
 
-    assign rst_stall_s = rst_i || div_stall_s || mult_stall_s;
-
-
 
     multiplier_top MULTIPLIER_INST (
         // Inputs
@@ -77,7 +72,7 @@ module M_accelerator_wrapper (
 
         // Outputs
         .result_o   ( mult_result_s ),
-        .mul_stall_o ( mult_stall_s  )
+        .stall_o    ( mult_stall_s  )
     );
 
     divider DIVIDER_INST (
@@ -94,19 +89,19 @@ module M_accelerator_wrapper (
         // Outputs
         .writeback_stall_o ( div_stall_s   ),
         .writeback_value_o ( div_result_s  ),
-        .div_by_zero_o     ( div_by_zero_s )
+        .div_by_zero_o     ( division_by_zero_o )
     );
 
     always@(posedge clk_i, posedge rst_i) begin
         if (rst_i)
             mux_selector_s <= 1'b0;
-        else if (mult_on_s || div_on_s)
+        else if (!stall_s)
             mux_selector_s <= div_on_s;
     end
 
     assign result_o = (mux_selector_s==1'b1) ? div_result_s : mult_result_s;
-    //assign result_o = (mux_selector_s==1'b1) ? mult_result_s : div_result_s;
-    assign stall_o = div_stall_s || mult_stall_s;
+    assign stall_s = div_stall_s || mult_stall_s;
+    assign stall_o = stall_s;
 
 
 endmodule

@@ -113,6 +113,10 @@ read_sdc "${SDC_SEARCH_PATH}constraints.sdc"
 report_timing -lint > "${REPORTS_PATH}${freq_mhz}/${CORNER}/${DESIGN}_constraints_summary.rpt"
 
 
+read_vcd "${SDC_SEARCH_PATH}HDL_simulation.vcd.gz"
+
+suspend
+
 # Defines the instances that could not ungroup
 #set_db hinst:cv32e40p_wrapper/core_i/id_stage_i/register_file_i .ungroup_ok false
 
@@ -199,6 +203,8 @@ set_db lp_power_unit uW
 
 write_hdl > "${DELIVERABLES_PATH}${freq_mhz}/${CORNER}/${DESIGN}.v"
 write_sdf > "${DELIVERABLES_PATH}${freq_mhz}/${CORNER}/${DESIGN}.sdf"
+write_hdl > "${DELIVERABLES_PATH}last/${DESIGN}.v"
+write_sdf > "${DELIVERABLES_PATH}last/${DESIGN}.sdf"
 report_timing > "${REPORTS_PATH}${freq_mhz}/${CORNER}/${DESIGN}_timing.rpt"
 report_area > "${REPORTS_PATH}${freq_mhz}/${CORNER}/${DESIGN}_area.rpt"
 report_area -detail > "${REPORTS_PATH}${freq_mhz}/${CORNER}/${DESIGN}_area_detail.rpt"

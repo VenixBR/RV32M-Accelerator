@@ -1,6 +1,7 @@
 module accelerator_tb;
 
-    localparam CLK_PERIOD = 10;
+    localparam CLK_PERIOD = 2.82; //355 MHz
+    //localparam CLK_PERIOD = 1; //355 MHz
     localparam STAGES = 5;
     `ifdef TESTS_NUM
         localparam TESTS_NUM_h = `TESTS_NUM;
@@ -54,9 +55,11 @@ module accelerator_tb;
             A_ext = {{32{A_op[31]}}, A_op};
             B_ext = {{32{B_op[31]}}, B_op};
             AxB = A_ext * B_ext;
-            #(CLK_PERIOD)
-            opcode = 7'b0110010; 
+            @(posedge clk)
+            funct3 = {$urandom};
+            opcode = {6'b011001, $urandom};
             @(negedge stall)
+            opcode = 7'b0110010;
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in MUL at time %0d", errors+1, $time)};
@@ -65,7 +68,6 @@ module accelerator_tb;
             end
             tests = tests + 1;
             $fdisplay(log_file,  "| MUL         | 0x%h | 0x%h || 0x%h | 0x%h || %s | %0d", A,B,AxB[31:0] ,answer, (AxB[31:0]==answer ? "     " : "ERROR"), $time );
-
         end
 
         // MULH
@@ -76,9 +78,11 @@ module accelerator_tb;
             A_ext = {{32{A_op[31]}}, A_op};
             B_ext = {{32{B_op[31]}}, B_op};
             AxB = A_ext * B_ext;
-            #(CLK_PERIOD)
-            opcode = 7'b0110010; 
+            @(posedge clk)
+            funct3 = {$urandom};
+            opcode = {6'b011001, $urandom};
             @(negedge stall)
+            opcode = 7'b0110010;
             #((9*CLK_PERIOD)/10)
             if (AxB[63:32]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in MULH at time %0d", errors+1, $time)};
@@ -97,9 +101,11 @@ module accelerator_tb;
             A_ext = {{32{A_op[31]}}, A_op};
             B_ext = {32'h00000000, B_op};
             AxB = A_ext * B_ext;
-            #(CLK_PERIOD)
-            opcode = 7'b0110010; 
+            @(posedge clk)
+            funct3 = {$urandom};
+            opcode = {6'b011001, $urandom};
             @(negedge stall)
+            opcode = 7'b0110010;
             #((9*CLK_PERIOD)/10)
             if (AxB[63:32]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in MULHSU at time %0d", errors+1, $time)};
@@ -118,9 +124,11 @@ module accelerator_tb;
             A_ext = {32'h00000000, A_op};
             B_ext = {32'h00000000, B_op};
             AxB = A_ext * B_ext;
-            #(CLK_PERIOD)
-            opcode = 7'b0110010; 
+            @(posedge clk)
+            funct3 = {$urandom};
+            opcode = {6'b011001, $urandom};
             @(negedge stall)
+            opcode = 7'b0110010;
             #((9*CLK_PERIOD)/10)
             if (AxB[63:32]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in MULHU at time %0d", errors+1, $time)};
@@ -139,9 +147,11 @@ module accelerator_tb;
             A_ext = {32'h00000000, A_op};
             B_ext = {32'h00000000, B_op};
             AxB = $signed(A_op) / $signed(B_op);
-            #(CLK_PERIOD)
-            opcode = 7'b0110010; 
+            @(posedge clk)
+            funct3 = {$urandom};
+            opcode = {6'b011001, $urandom};
             @(negedge stall)
+            opcode = 7'b0110010;
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in DIV at time %0d", errors+1, $time)};
@@ -160,9 +170,11 @@ module accelerator_tb;
             A_ext = {32'h00000000, A_op};
             B_ext = {32'h00000000, B_op};
             AxB = A_op / B_op;
-            #(CLK_PERIOD)
-            opcode = 7'b0110010; 
+            @(posedge clk)
+            funct3 = {$urandom};
+            opcode = {6'b011001, $urandom};
             @(negedge stall)
+            opcode = 7'b0110010;
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in DIVU at time %0d", errors+1, $time)};
@@ -181,9 +193,11 @@ module accelerator_tb;
             A_ext = {32'h00000000, A_op};
             B_ext = {32'h00000000, B_op};
             AxB = $signed(A_op) % $signed(B_op);
-            #(CLK_PERIOD)
-            opcode = 7'b0110010; 
+            @(posedge clk)
+            funct3 = {$urandom};
+            opcode = {6'b011001, $urandom};
             @(negedge stall)
+            opcode = 7'b0110010; 
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in REM at time %0d", errors+1, $time)};
@@ -202,9 +216,11 @@ module accelerator_tb;
             A_ext = {32'h00000000, A_op};
             B_ext = {32'h00000000, B_op};
             AxB = A_op % B_op;
-            #(CLK_PERIOD)
-            opcode = 7'b0110010; 
+            @(posedge clk)
+            funct3 = {$urandom};
+            opcode = {6'b011001, $urandom};
             @(negedge stall)
+            opcode = 7'b0110010;
             #((9*CLK_PERIOD)/10)
             if (AxB[31:0]!=answer) begin
                 errors_log = {errors_log, $sformatf("\n|       [%0d] Error in REMU at time %0d", errors+1, $time)};
@@ -243,7 +259,7 @@ module accelerator_tb;
         opcode = 7'b0110011; 
         funct7 = 7'b0000001;
         
-        #(CLK_PERIOD/2) rst = 1; #(3*CLK_PERIOD/2) rst = 0;
+        @(negedge clk) rst = 1; @(posedge clk) #(3*CLK_PERIOD/10) rst = 0;
 
         $fdisplay(log_file, "\n+-------------+------------+------------++------------+------------++-------+---------");
         $fdisplay(log_file,   "| INSTRUCTION |  OPERAND A |  OPERAND B ||  EXPECTED  |   ANSWER   || INFO  | TIME");

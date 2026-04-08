@@ -27,7 +27,7 @@ module multiplier_top (
 
     // Outputs
     output wire [31:0] result_o,
-    output wire mul_stall_o
+    output wire stall_o
 );
 
     // Interconnect signals
@@ -39,7 +39,6 @@ module multiplier_top (
     wire       en_pipe_s;
     wire       mux_B_sel_s;
     wire       shift_amount_s;
-    wire       stall_s;
 
     // CONTROL PATH
     multiplier_CP MULT_CP_inst(
@@ -55,7 +54,7 @@ module multiplier_top (
         .rst_AC_o       ( rst_AC_s       ),
         .en_pipe_o      ( en_pipe_s      ),
         .shift_amount_o ( shift_amount_s ),
-        .mul_stall_o    ( mul_stall_o    )
+        .stall_o        ( stall_o        )
     );
 
     multiplier_DP MULT_DP_inst ( 
