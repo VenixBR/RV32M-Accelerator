@@ -1,7 +1,9 @@
 export ROOT       = $(CURDIR)
 #export DESIGN_    = multiplier_top
-export DESIGN_    = M_accelerator_wrapper
-export FREQ_MHZ   ?= 200
+export DESIGN_    = divider
+#export DESIGN_    = M_accelerator_wrapper
+export FREQ_MHZ   ?= 355
+export TECH       ?= 45
 export OP_CORNER  ?= slow
 export RTL_DIR    = ${ROOT}/src
        TESTS_DIR  = ${ROOT}/tb
@@ -36,7 +38,11 @@ Mult_xcelium:
 
 Multiplier_xcelium:
 	cd ${ROOT}/synthesis/work && \
-	xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/mult.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v ${TESTS_DIR}/multiplier_tb.sv $(FLAGS_X); \
+	xrun -v2001 ${RTL_DIR}/multiplier_CP.v ${RTL_DIR}/mult.v ${RTL_DIR}/multiplier_DP.v ${RTL_DIR}/multiplier_top.v ${RTL_DIR}/decoder.v ${TESTS_DIR}/multiplier_tb.sv $(FLAGS_X); \
+
+Divider_xcelium:
+	cd ${ROOT}/synthesis/work && \
+	xrun -v2001 ${RTL_DIR}/divider.v ${TESTS_DIR}/divider_tb.sv $(FLAGS_X); \
 
 
 Accelerator_xcelium:

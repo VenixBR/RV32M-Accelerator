@@ -9,6 +9,7 @@ set DESIGN $env(DESIGN_)
 set ROOT_DIR $env(ROOT)
 set freq_mhz $env(FREQ_MHZ)
 set CORNER $env(OP_CORNER)
+set NODE $env(TECH)
 set MULTIBIT 0
 set QUIT_ON_FINISH 0
 
@@ -22,17 +23,19 @@ set DFT_compress_ratio 0
 # ------------ Setting paths from archivers ---------------------
 # ---------------------------------------------------------------
 
+if {$NODE == 22} {
+  source ${ROOT_DIR}/synthesis/scripts/setup22nm.tcl
+} else {
+  source ${ROOT_DIR}/synthesis/scripts/setup45nm.tcl
+}
+
+
 # Set the paths to search the HDL files
 set_db init_hdl_search_path ${ROOT_DIR}/src
 
 
 # Set the paths to search the libs and LEF files
-set_db init_lib_search_path { \
-  /home/tools/design_kits/cadence/GPDK045/gsclib045_svt_v4.4/gsclib045/timing \
-  /home/tools/design_kits/cadence/GPDK045/giolib045_v3.3/timing \
-  /home/tools/design_kits/cadence/GPDK045/gsclib045_svt_v4.4/gsclib045/lef/ \
-  /home/tools/design_kits/cadence/GPDK045/giolib045_v3.3/lef/ \
-}
+set_db init_lib_search_path $LIB_LEF_PATH
 
 # Set the path to search SDC files
 set SDC_SEARCH_PATH        ${ROOT_DIR}/synthesis/constraints/
@@ -44,8 +47,6 @@ set FILELIST_SEARCH_PATH   ${ROOT_DIR}/src/filelists/
 set REPORTS_PATH           ${ROOT_DIR}/synthesis/outputs/reports/
 set DELIVERABLES_PATH      ${ROOT_DIR}/synthesis/outputs/deliverables/
 
-# Set the path to seatch CapTable file
-set QRC_PATH          /home/tools/design_kits/cadence/GPDK045/gpdk045_v_6_0/qrc/
 
 
 
@@ -60,17 +61,11 @@ set QRC_PATH          /home/tools/design_kits/cadence/GPDK045/gpdk045_v_6_0/qrc/
 switch -- $CORNER {
 
     "slow" {
-        read_libs {
-            slow_vdd1v0_basicCells.lib
-        }
+        read_libs $LIBS_SLOW
     }
 
     "fast" {
-        read_libs {
-            fast_vdd1v2_basicCells.lib
-        }
-
-        set_db qrc_tech_file ${QRC_PATH}rcworst/qrcTechFile
+        read_libs $LIBS_FAST
     }
 
     "typical" {
@@ -85,12 +80,13 @@ switch -- $CORNER {
 }
 
 
-read_physical -lefs {                             \
-  gsclib045_tech.lef                              \
-  gsclib045_macro.lef                             \
-}
+read_physical -lefs $LEFS
 
-set_db qrc_tech_file  ${QRC_PATH}rcworst/qrcTechFile
+if {$NODE == 45} {
+  set_db qrc_tech_file  $QRC
+} else {
+  set_db cap_table_file  $QRC
+}
 
 
 # Load the HDL filelist
@@ -103,19 +99,19 @@ read_hdl -language v2001 -f "${FILELIST_SEARCH_PATH}${DESIGN}.flist"
 
 # Elaborate the design
 elaborate $DESIGN
-check_design > "${REPORTS_PATH}${freq_mhz}/${CORNER}/${DESIGN}_check_design.rpt"
+check_design > "${REPORTS_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}_check_design.rpt"
 
 # Read constraints SDC files
 # create_mode -name FUNCTIONAL -default -design ${DESIGN}
 # read_sdc -mode FUNCTIONAL "${SDC_SEARCH_PATH}${DESIGN}_n22.sdc"
 read_sdc "${SDC_SEARCH_PATH}constraints.sdc"
 # define_cost_group -name FUNCTIONAL
-report_timing -lint > "${REPORTS_PATH}${freq_mhz}/${CORNER}/${DESIGN}_constraints_summary.rpt"
+report_timing -lint > "${REPORTS_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}_constraints_summary.rpt"
 
 
-read_vcd "${SDC_SEARCH_PATH}HDL_simulation.vcd.gz"
+read_vcd "${SDC_SEARCH_PATH}${DESIGN}_HDL_simulation.vcd.gz"
 
-suspend
+
 
 # Defines the instances that could not ungroup
 #set_db hinst:cv32e40p_wrapper/core_i/id_stage_i/register_file_i .ungroup_ok false
@@ -201,16 +197,17 @@ if {$DFT} {
 # ---------------------------------------------------------------
 set_db lp_power_unit uW 
 
-write_hdl > "${DELIVERABLES_PATH}${freq_mhz}/${CORNER}/${DESIGN}.v"
-write_sdf > "${DELIVERABLES_PATH}${freq_mhz}/${CORNER}/${DESIGN}.sdf"
+write_hdl > "${DELIVERABLES_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}.v"
+write_sdf > "${DELIVERABLES_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}.sdf"
 write_hdl > "${DELIVERABLES_PATH}last/${DESIGN}.v"
 write_sdf > "${DELIVERABLES_PATH}last/${DESIGN}.sdf"
-report_timing > "${REPORTS_PATH}${freq_mhz}/${CORNER}/${DESIGN}_timing.rpt"
-report_area > "${REPORTS_PATH}${freq_mhz}/${CORNER}/${DESIGN}_area.rpt"
-report_area -detail > "${REPORTS_PATH}${freq_mhz}/${CORNER}/${DESIGN}_area_detail.rpt"
-report_power -unit uW > "${REPORTS_PATH}${freq_mhz}/${CORNER}/${DESIGN}_power.rpt"
-report_gates > "${REPORTS_PATH}${freq_mhz}/${CORNER}/${DESIGN}_gates.rpt"
-report_hierarchy > "${REPORTS_PATH}${freq_mhz}/${CORNER}/${DESIGN}_hierarchy.rpt"
+report_timing > "${REPORTS_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}_timing.rpt"
+report_area > "${REPORTS_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}_area.rpt"
+report_area -normalize_with_gate $NAND2X1_NAME > "${REPORTS_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}_EG.rpt"
+report_area -detail > "${REPORTS_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}_area_detail.rpt"
+report_power -unit uW > "${REPORTS_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}_power.rpt"
+report_gates > "${REPORTS_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}_gates.rpt"
+report_hierarchy > "${REPORTS_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}_hierarchy.rpt"
 
 if {$MULTIBIT} {
   report_multibit_inferencing > "${REPORTS_PATH}cv32e40p_multibit.rpt"
