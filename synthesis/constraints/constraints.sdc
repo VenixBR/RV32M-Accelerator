@@ -4,6 +4,7 @@ set MAIN_RST_NAME rst_i
 set period_clk [format "%.2f" [expr 1000.0 / $freq_mhz]] ;# (100 ns = 10 MHz) (10 ns = 100 MHz) (2 ns = 500 MHz) (1 ns = 1 GHz)
 set clk_uncertainty 0.05 ;# ns (“a guess”)
 set clk_latency 0.10 ;# ns (“a guess”)
+set clk_skew 0.10 ;# ns (“a guess”)
 set in_delay 0.30 ;# ns
 set out_delay 0.30;#ns 
 set out_load 0.045 ;#pF 
@@ -36,6 +37,7 @@ set_ideal_net [get_nets ${MAIN_RST_NAME}]
 #################################################################################
 create_clock -name ${MAIN_CLOCK_NAME} -period $period_clk [get_ports ${MAIN_CLOCK_NAME}]
 set_clock_uncertainty ${clk_uncertainty} [get_clocks ${MAIN_CLOCK_NAME}]
+set_clock_skew ${clk_skew} [get_clocks ${MAIN_CLOCK_NAME}]
 set_clock_latency ${clk_latency} [get_clocks ${MAIN_CLOCK_NAME}]
 
 #################################################################################

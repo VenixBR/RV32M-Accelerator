@@ -25,7 +25,6 @@ module multiplier_CP (
     reg [2:0] Current_State_s;
     reg [2:0] Next_State_s;
 
-
     // NEXT STAGE LOGIC
     always@* begin
         case(Current_State_s)
@@ -34,6 +33,7 @@ module multiplier_CP (
             MULT_2  : begin Next_State_s = WAIT; end
             WAIT    : begin Next_State_s = DONE; end
             DONE    : begin Next_State_s = INIT; end
+            default : begin Next_State_s = INIT; end
         endcase
     end
 

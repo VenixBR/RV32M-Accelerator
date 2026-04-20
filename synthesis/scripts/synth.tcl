@@ -5,7 +5,7 @@
 # ---------------------------------------------------------------
 
 
-set DESIGN $env(DESIGN_)
+set DESIGN $env(CIRCUIT)
 set ROOT_DIR $env(ROOT)
 set freq_mhz $env(FREQ_MHZ)
 set CORNER $env(OP_CORNER)
@@ -81,7 +81,6 @@ switch -- $CORNER {
 
 
 read_physical -lefs $LEFS
-
 if {$NODE == 45} {
   set_db qrc_tech_file  $QRC
 } else {
@@ -99,6 +98,7 @@ read_hdl -language v2001 -f "${FILELIST_SEARCH_PATH}${DESIGN}.flist"
 
 # Elaborate the design
 elaborate $DESIGN
+
 check_design > "${REPORTS_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}_check_design.rpt"
 
 # Read constraints SDC files
@@ -108,10 +108,8 @@ read_sdc "${SDC_SEARCH_PATH}constraints.sdc"
 # define_cost_group -name FUNCTIONAL
 report_timing -lint > "${REPORTS_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}_constraints_summary.rpt"
 
-
 read_vcd "${SDC_SEARCH_PATH}${DESIGN}_HDL_simulation.vcd.gz"
-
-
+report_sdb_annotation >> "${REPORTS_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}_read_vcd.rpt"  
 
 # Defines the instances that could not ungroup
 #set_db hinst:cv32e40p_wrapper/core_i/id_stage_i/register_file_i .ungroup_ok false
@@ -171,6 +169,7 @@ if {$DFT} {
 # ---------------------------------------------------------------
 
 syn_gen
+write_hdl > "${DELIVERABLES_PATH}${NODE}nm/${freq_mhz}/${CORNER}/${DESIGN}_generic.v"
 syn_map 
 
 if {$DFT} {

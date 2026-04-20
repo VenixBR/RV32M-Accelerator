@@ -1,7 +1,7 @@
 export ROOT       = $(CURDIR)
-#export DESIGN_    = multiplier_top
-export DESIGN_    = divider
-#export DESIGN_    = M_accelerator_wrapper
+#export CIRCUIT    = multiplier_top
+export CIRCUIT    ?= divider
+#export CIRCUIT    = M_accelerator_wrapper
 export FREQ_MHZ   ?= 355
 export TECH       ?= 45
 export OP_CORNER  ?= slow
@@ -25,7 +25,7 @@ ifneq ($(TESTS),16)
 	FLAGS_I += -DTESTS_NUM=${TESTS}
 endif
 
-VERILOG_PATH = /home/tools/design_kits/cadence/GPDK045/gsclib045_all_v4.4/gsclib045/verilog/slow_vdd1v0_basicCells.v
+VERILOG_PATH = /home/tools/CIRCUITkits/cadence/GPDK045/gsclib045_all_v4.4/gsclib045/verilog/slow_vdd1v0_basicCells.v
 
 
 Decoder_xcelium:
