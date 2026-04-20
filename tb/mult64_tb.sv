@@ -7,7 +7,7 @@ module multiplier_tb;
     `endif
 
     logic [31:0] A_op, B_op;
-    logic [31:0] answer;
+    logic [63:0] answer;
     int tests;
     int errors;
 
@@ -18,7 +18,7 @@ module multiplier_tb;
     .result_o (answer)
     );
 
-    logic [31:0] expected;
+    logic [63:0] expected;
 
 
     task TestResult (input logic [31:0]A, input logic [31:0]B);
@@ -44,9 +44,9 @@ module multiplier_tb;
         tests = TESTS_NUM_h;
         errors = 0;
 
-        $display("\n+------------+------------+------------+-------+-------+");
-        $display(  "| INPUT A    | INPUT B    | ANSWER     | Erro  | time");
-        $display(  "+------------+------------+------------+-------+-------+");
+        $display("\n+------------+------------+----------------------+-------+-------+");
+        $display(  "| INPUT A    | INPUT B    | ANSWER               | Erro  | time");
+        $display(  "+------------+------------+----------------------+-------+-------+");
 
         for (int i=0 ; i<TESTS_NUM_h ; i=i+1) begin
             TestResult($urandom, $urandom);

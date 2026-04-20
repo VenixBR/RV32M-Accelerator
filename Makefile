@@ -97,7 +97,15 @@ Multiplier_CP_icarus:
 
 Mult_icarus:
 	cd ${ROOT}/synthesis/work && \
-	iverilog -g2012 -Wall -DDEBUG -o testbench ${RTL_DIR}/mult.v ${TESTS_DIR}/mult_tb.sv && \
+	iverilog ${FLAGS_I} -Wall ${RTL_DIR}/mult.v ${TESTS_DIR}/mult_tb.sv && \
+	vvp testbench && \
+	if [ "$(GUI)" = "1" ]; then \
+		gtkwave dump.vcd; \
+	fi
+
+Mult64_icarus:
+	cd ${ROOT}/synthesis/work && \
+	iverilog ${FLAGS_I} -Wall ${RTL_DIR}/mult64.v ${TESTS_DIR}/mult64_tb.sv && \
 	vvp testbench && \
 	if [ "$(GUI)" = "1" ]; then \
 		gtkwave dump.vcd; \
